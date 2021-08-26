@@ -1,25 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {Component} from 'react';
+import './App.css'
+import SwitchComponents from './components/SwitchComponent';
+import DefaultLoginView from "./views/DefaultLoginView";
+import RegistrationView from "./views/RegistrationView";
+import LocalLoginView from "./views/LocalLoginView";
+import PasswordsListView from "./views/PasswordListView";
+import ViewType from "./other/ViewType"
+import LocalRegistrationView from "./views/LocalRegistrationView";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+class App extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            activeView: ViewType.defaultLoginView,
+        }
+    }
+
+    changeActiveView = (newActiveView) => {
+        this.setState({activeView: newActiveView});
+    }
+
+    render() {
+        return (
+            <div className="App">
+                <SwitchComponents active={this.state.activeView}>
+                    <DefaultLoginView componentName={ViewType.defaultLoginView}
+                                      changeParentsActiveView={this.changeActiveView}/>
+                    <LocalLoginView componentName={ViewType.localLoginView}
+                                    changeParentsActiveView={this.changeActiveView}/>
+                    <LocalRegistrationView componentName={ViewType.localRegistrationView}
+                                           changeParentsActiveView={this.changeActiveView}/>
+                    <RegistrationView componentName={ViewType.registrationView}
+                                      changeParentsActiveView={this.changeActiveView}/>
+                    <PasswordsListView componentName={ViewType.passwordListView}
+                                       changeParentsActiveView={this.changeActiveView}/>
+                </SwitchComponents>
+            </div>
+        );
+    }
 }
 
 export default App;

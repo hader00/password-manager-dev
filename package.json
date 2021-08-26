@@ -1,21 +1,58 @@
 {
   "name": "simple-password-manager-app",
+  "productName": "Simple Password Manager",
   "version": "0.1.0",
   "private": true,
+  "author": "Martin Haderka",
+  "description": "Description",
+  "license": "MIT",
+  "main": "public/electron.js",
+  "homepage": "./",
+  "repository": {
+    "type": "git",
+    "url": "./"
+  },
+  "build": {
+    "appId": "cz.martin.haderka.simple-password-manager-app",
+    "files": [
+      "build/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg"
+    },
+    "linux": {
+      "category": "Network"
+    }
+  },
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
+    "crypto-js": "^4.1.1",
+    "electron-is-dev": "^2.0.0",
+    "electron-store": "^8.0.0",
+    "electron-window-state": "^5.0.3",
+    "mysql": "^2.18.1",
+    "sqlite3": "^5.0.2"
+  },
+  "scripts": {
+    "start": "concurrently \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\"",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "dist": "yarn build && electron-builder -mwl",
+    "dist-mac": "yarn build && electron-builder -m",
+    "dist-win": "yarn build && electron-builder -w",
+    "dist-linux": "yarn build && electron-builder -l"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^13.2.2",
+    "electron-builder": "^22.11.7",
+    "prop-types": "^15.7.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "wait-on": "^6.0.0"
   },
   "eslintConfig": {
     "extends": [
