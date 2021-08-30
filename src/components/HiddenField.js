@@ -20,6 +20,7 @@ export class HiddenField extends Component {
                 <input type={this.props.type} placeholder={this.props.placeholder} name={this.props.name}
                        style={{display: "none"}}
                        id="hiddenField"/>
+                <p>{this.props.location}</p>
             </div>
         )
     }

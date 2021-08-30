@@ -31,49 +31,13 @@ export class PasswordListView extends Component {
 
     componentDidMount() {
         console.log('mounting')
-        window.electron.loginMode().then((result) => {
-            console.log("result => ", result)
-            if (result.loginMode === 0) {
-                this.fetchAll();
-            } else {
-                this.fetchAllPPasswords();
-            }
-        });
-    }
-
-
-    send = (message) => {
-        window.electron.dbMessenger(message).then((result) => {
-            this.setState({response: result});
-            this.setState({passwords: result});
-            console.log(result)
-        });
-    }
-
-
-    fetchAll = () => {
-
-        window.electron.loginMode().then((result) => {
-            console.log("result => ", result)
-            if (result.loginMode === 0) {
-                let message = "SELECT * FROM Passwords"
-                window.electron.dbMessenger(message).then((result) => {
-                    console.log("res", result);
-                    this.setState({response: result});
-                    this.setState({passwords: result});
-                });
-            } else {
-                this.fetchAllPPasswords();
-            }
-        });
-
-
+        this.fetchAllPPasswords();
     }
 
     fetchAllPPasswords = () => {
         console.log("Fetching all passwords");
         window.electron.fetchAllPPasswords().then((result) => {
-
+            console.log(result);
             this.setState({response: result.response});
             this.setState({passwords: result.response});
         });
@@ -107,7 +71,7 @@ export class PasswordListView extends Component {
                         parentPasswordView={this.handlePasswordView}
                         inputReadOnly={this.state.inputReadOnly}
                         addingNewItem={this.state.addingNewItem}
-                        fetchAllHandler={this.fetchAll}
+                        fetchAllHandler={this.fetchAllPPasswords}
                     />
                 </div>
             );

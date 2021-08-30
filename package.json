@@ -6,7 +6,7 @@
   "author": "Martin Haderka",
   "description": "Description",
   "license": "MIT",
-  "main": "public/electron.js",
+  "main": "public/entry.js",
   "homepage": "./",
   "repository": {
     "type": "git",

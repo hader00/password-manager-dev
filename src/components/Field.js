@@ -6,8 +6,11 @@ export class Field extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            passwordType: "password"
+            passwordType: "password",
+            value: this.props.value,
+            encrypted: this.props.value,
         }
+        console.log(props.name, props.showViewPassOptions, props.passwordType)
     }
 
     render() {
@@ -15,21 +18,26 @@ export class Field extends Component {
         return (
             <div>
                 <label htmlFor={props.name}><b>{props.text}</b></label>
-                <input value={props.value} type={(props.type === "password") ? this.state.passwordType : props.type}
+                <input value={this.state.value} type={(props.type === "password") ? this.state.passwordType : props.type}
                        placeholder={props.placeholder}
                        name={props.name} id={props.id} onChange={props.onChange}/>
                 {(props.name === "Password" && props.showViewPassOptions) ?
-                    (props.passwordType === "password") ?
+                    (this.state.passwordType === "password") ?
                         <>
                             <button onClick={() => {
                                 // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
                                 this.setState({passwordType: "text"});
+                                window.electron.decryptPassword(this.props.value).then(r => {
+                                    this.setState({value: r.password});
+                                })
                             }}>
                                 ViewPassWord
                             </button>
                             <button onClick={(e) => {
                                 e.preventDefault();
-                                this.copy(props.value)
+                                window.electron.decryptPassword(this.props.value).then(r => {
+                                    this.copy(r.password)
+                                })
                             }}>
                                 CopyPassWord
                             </button>
@@ -39,12 +47,15 @@ export class Field extends Component {
                             <button onClick={() => {
                                 // Todo nullify on view change or on hide
                                 this.setState({passwordType: "password"});
+                                this.setState({value: this.state.encrypted});
                             }}>
                                 HidePassWord
                             </button>
                             <button onClick={(e) => {
                                 e.preventDefault();
-                                this.copy(props.value)
+                                window.electron.decryptPassword(this.props.value).then(r => {
+                                    this.copy(r.password)
+                                })
                             }}>
                                 CopyPassWord
                             </button>

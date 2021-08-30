@@ -46,6 +46,7 @@ class DefaultLoginView extends Component {
 
 
     handleLocalLoginViewChange = () => {
+        // todo needs to be handled other way by saving previous user state (custom location etc)
         window.electron.dbExists().then((result) => {
             console.log(result)
             if (result.dbExists === true) {

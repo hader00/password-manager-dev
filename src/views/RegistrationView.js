@@ -41,7 +41,7 @@ class RegistrationView extends Component {
         let userEmail = document.getElementById('user-email');
         let userPassword = document.getElementById('user-password');
         let userConfirmPassword = document.getElementById('user-confirm-password');
-        let userServer = document.getElementById('user-server');
+        let userServer = document.getElementById('hiddenField');
         //
         if (userFirstName.checkValidity() && userLastName.checkValidity() && userServer.checkValidity() &&
             userEmail.checkValidity() && userPassword.checkValidity() && userConfirmPassword.checkValidity()) {

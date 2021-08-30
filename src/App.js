@@ -14,7 +14,7 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeView: ViewType.defaultLoginView,
+            activeView: null,
         }
     }
 
@@ -39,6 +39,10 @@ class App extends Component {
                 </SwitchComponents>
             </div>
         );
+    }
+
+    componentDidMount() {
+        window.electron.getDefaultView().then((response) => {return this.setState({activeView: response.defaultView})});
     }
 }
 

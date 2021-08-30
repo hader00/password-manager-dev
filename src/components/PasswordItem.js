@@ -8,7 +8,7 @@ export class PasswordItem extends Component {
             <div className="password-item">
                 <div className="d-flex space-between">
                     <div>
-                        <img id="password-icon" alt="favicon"
+                        <img id="password-icon" alt="" style={{width:"30px", height:"30px"}}
                              src={'https://' + this.props.password.Url + '/favicon.ico'}/>
                     </div>
                     <div>

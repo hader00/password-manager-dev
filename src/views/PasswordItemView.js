@@ -37,8 +37,7 @@ export class PasswordItemView extends Component {
                         <button className="cancel-btn" type="button" onClick={this.deletePassword}>{"Delete"}</button>
                         </> :
                         (!this.props.addingNewItem) ?
-                            // Todo open page in default system browser
-                            <button onClick={(e) => {e.preventDefault();}}>{"Visit page"}</button> :
+                            <button onClick={this.openBrowser}>{"Visit page"}</button> :
                                 <button id="submit-button" type="submit" onClick={this.addPassword}>{"Save"}</button>
                 }
             </>
@@ -54,101 +53,60 @@ export class PasswordItemView extends Component {
     }
 
     addPassword = () => {
-        window.electron.loginMode().then((result) => {
-            console.log(result)
-            if (result.loginMode === 0) {
-                let msg =
-                    `INSERT INTO Passwords (Title, Description, Url, Username, Password)` +
-                    `VALUES ('${this.state.Title}', '${this.state.Description}', '${this.state.Url}', `+
-                    `'${this.state.Username}', '${this.state.Password}');`
-                window.electron.dbMessenger(msg).then((result) => {
-                    console.log(result)
-                    this.props.fetchAllHandler()
-                    this.popView();
-                });
+        let Title = this.state.Title;
+        let Description = this.state.Description;
+        let Url = this.state.Url;
+        let Username = this.state.Username;
+        let Password = this.state.Password;
+        window.electron.addPassword(Title, Description, Url, Username, Password).then((result) => {
+            if (result.addSuccess === true) {
+                console.log(result)
+                this.props.fetchAllHandler()
+                this.popView();
             } else {
-                let Title = this.state.Title;
-                let Description = this.state.Description;
-                let Url = this.state.Url;
-                let Username = this.state.Username;
-                let Password = this.state.Password;
-                window.electron.addPassword(Title, Description, Url, Username, Password).then((result) => {
-                    if (result.addSuccess === true) {
-                        console.log(result)
-                        this.props.fetchAllHandler()
-                        this.popView();
-                    } else {
-                        console.log("fail")
-                        console.log(result)
-                    }
-                });
+                console.log("fail")
+                console.log(result)
             }
-        })
-
+        });
     }
 
     updatePassword = () => {
-        window.electron.loginMode().then((result) => {
-            if (result.loginMode === 0) {
-                let msg =
-                    `UPDATE Passwords ` +
-                    `SET Title = '${this.state.Title}', Description = '${this.state.Description}', Url = '${this.state.Url}', `+
-                    `Username = '${this.state.Username}', Password = '${this.state.Password}' `+
-                    `WHERE Id = ${this.state.Id};`
-                window.electron.dbMessenger(msg).then((result) => {
-                    console.log(result)
-                    this.props.fetchAllHandler()
-                    this.popView();
-                });
+        console.log("updating")
+        let Id = this.state.Id;
+        let Title = this.state.Title;
+        let Description = this.state.Description;
+        let Url = this.state.Url;
+        let Username = this.state.Username;
+        let Password = this.state.Password;
+        window.electron.updatePassword(Id, Title, Description, Url, Username, Password).then((result) => {
+            if (result.updateSuccess === true) {
+                console.log(result)
+                this.props.fetchAllHandler()
+                this.popView();
             } else {
-                console.log("updating")
-                let Id = this.state.Id;
-                let Title = this.state.Title;
-                let Description = this.state.Description;
-                let Url = this.state.Url;
-                let Username = this.state.Username;
-                let Password = this.state.Password;
-                window.electron.updatePassword(Id, Title, Description, Url, Username, Password).then((result) => {
-                    if (result.updateSuccess === true) {
-                        console.log(result)
-                        this.props.fetchAllHandler()
-                        this.popView();
-                    } else {
-                        console.log("fail")
-                        console.log(result)
-                    }
-                });
+                console.log("fail")
+                console.log(result)
             }
         });
     }
 
     deletePassword = () => {
-        window.electron.loginMode().then((result) => {
-            if (result.loginMode === 0) {
-                let msg =
-                    `DELETE FROM Passwords ` +
-                    `WHERE Id = ${this.state.Id};`
-                window.electron.dbMessenger(msg).then((result) => {
-                    console.log(result)
-                    this.props.fetchAllHandler()
-                    this.popView();
-                });
+        let Id = this.state.Id;
+        window.electron.deletePassword(Id).then((result) => {
+            console.log("deleting")
+            if (result.deleteSuccess === true) {
+                console.log(result)
+                this.props.fetchAllHandler()
+                this.popView();
             } else {
-                let Id = this.state.Id;
-                window.electron.deletePassword(Id).then((result) => {
-                    console.log("deleting")
-                    if (result.deleteSuccess === true) {
-                        console.log(result)
-                        this.props.fetchAllHandler()
-                        this.popView();
-                    } else {
-                        console.log("fail")
-                        console.log(result)
-                    }
-                });
+                console.log("fail")
+                console.log(result)
             }
         });
+    }
 
+    openBrowser = () => {
+        window.electron.shellOpenExternal("https://"+this.state.Url);
     }
 }
 

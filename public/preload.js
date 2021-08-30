@@ -1,5 +1,5 @@
 process.once('loaded', () => {
-    const electron = require('electron');
+    const electron = require('electron')
     const { contextBridge, ipcRenderer, shell } = electron;
 
     contextBridge.exposeInMainWorld('electron', {
@@ -17,20 +17,40 @@ process.once('loaded', () => {
                 ipcRenderer.once('localLogin:response', (_, response) => {
                     resolve(response);
                 });
+                console.log(password, location)
                 ipcRenderer.send('localLogin:login', password, location);
             });
         },
 
-        async localRegistration(password) {
+        async  selectFile() {
             return new Promise((resolve) => {
-                ipcRenderer.once('localRegistration:response', (_, response) => {
+                ipcRenderer.once('selectDatabase:response', (_, response) => {
                     resolve(response);
                 });
-                ipcRenderer.send('localRegistration:register', password);
+                ipcRenderer.send('selectDatabase:get')
+            });
+        },
+
+        async  selectFolder() {
+            return new Promise((resolve) => {
+                ipcRenderer.once('selectFolder:response', (_, response) => {
+                    resolve(response);
+                });
+                ipcRenderer.send('selectFolder:get')
+            });
+        },
+
+        async localRegistration(password, location) {
+            return new Promise((resolve) => {
+                ipcRenderer.once('localLogin:registerResponse', (_, response) => {
+                    resolve(response);
+                });
+                ipcRenderer.send('localLogin:register', password, location);
             });
         },
 
         async dbExists() {
+            // todo needs to be handled other way by saving previous user state (custom location etc)
             return new Promise((resolve) => {
                 ipcRenderer.once('db:response', (_, response) => {
                     resolve(response);
@@ -75,6 +95,15 @@ process.once('loaded', () => {
             });
         },
 
+        async decryptPassword(password) {
+            return new Promise((resolve) => {
+                ipcRenderer.once('password:decryptResponse', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('password:decrypt', password);
+            });
+        },
+
         async dbMessenger(message) {
             return new Promise((resolve) => {
                 ipcRenderer.once('db-reply', (_, arg) => {
@@ -86,7 +115,7 @@ process.once('loaded', () => {
 
         async fetchAllPPasswords() {
             return new Promise((resolve) => {
-                ipcRenderer.once('passwords:response', (_, arg) => {
+                ipcRenderer.once('passwords:fetchResponse', (_, arg) => {
                     resolve(arg);
                 });
                 ipcRenderer.send('passwords:fetch');
@@ -110,7 +139,18 @@ process.once('loaded', () => {
                 ipcRenderer.send('remoteRegistration:register', userServer, userEmail, userPassword, userConfirmPassword, userFirstName, userLastName);
             });
         },
-        async shellOpenExternal (url) {
+
+
+        async getDefaultView() {
+            return new Promise((resolve) => {
+                ipcRenderer.once('defaultView:response', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('defaultView:get');
+            });
+        },
+
+        async shellOpenExternal(url) {
             await shell.openExternal(url)
         },
     })

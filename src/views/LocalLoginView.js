@@ -6,6 +6,13 @@ import ViewType from "../other/ViewType"
 import PropTypes from "prop-types";
 
 class LocalLoginView extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            location: ""
+        }
+    }
+
     render() {
         return (
             <>
@@ -15,7 +22,7 @@ class LocalLoginView extends Component {
                     <Field text={"Password"} type={"password"} placeholder={"Enter Password"} name={"user-password"} id={"user-password"}/>
                     <HiddenField
                         text={"Custom Location"} type={"file"} placeholder={"Custom Location"} name={"user-file-location"} id={"user-file-location"}
-                        helpDescription={"Enter custom location of passwords database"}/>
+                        helpDescription={"Enter custom location of passwords database"} location={this.state.location}/>
 
                     <button id="submit-button" type="submit" onClick={this.submitLocalLogin}>Login</button>
                 </div>
@@ -29,11 +36,12 @@ class LocalLoginView extends Component {
     }
 
     submitLocalLogin = (e) => {
+        e.preventDefault();
         let userPassword = document.getElementById('user-password');
-        let userLocation = document.getElementById('user-file-location');
-
+        let userLocation = document.getElementById('hiddenField');
+        console.log(userPassword, userLocation)
         if (userPassword.checkValidity() && userLocation.checkValidity()) {
-            e.preventDefault();
+            //e.preventDefault();
             let password = userPassword.value
             let location = userLocation.value
             window.electron.localLogin(password, location).then((result) => {
@@ -45,6 +53,20 @@ class LocalLoginView extends Component {
                 }
             });
         }
+    }
+
+    componentDidMount() {
+        document.getElementById('hiddenField').addEventListener('click', () => {
+            window.electron.selectFile().then((result) => {
+                // todo check validity and show selected file path
+                if (result.validity === true) {
+                    // todo show success msg
+                    this.setState({location: result.selectedFile})
+                } else {
+                    // todo show warning
+                }
+            });
+        })
     }
 }
 
