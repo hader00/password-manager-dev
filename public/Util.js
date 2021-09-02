@@ -10,7 +10,7 @@ const DBModeEnum = {
 const ENCRYPTED_EXTENSION = ".out.encrypted";
 const DATABASE_FILENAME = "passwords.db";
 const DEFAULT_LOCAL_DB_LOCATION = path.resolve(app.getPath('userData'), 'passwords.db');
-const ALGORITHM = 'aes-256-ctr';
+const ALGORITHM = 'aes-256-cbc';
 const MYSQL_CONFIG = {
     user: 'root',
     host: 'localhost',

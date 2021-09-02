@@ -68,6 +68,15 @@ process.once('loaded', () => {
             });
         },
 
+        async generatePassword(length, specialCharacters, numbers, lowerCase, upperCase) {
+            return new Promise((resolve) => {
+                ipcRenderer.once('password:generateResponse', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('password:generate', length, specialCharacters, numbers, lowerCase, upperCase);
+            });
+        },
+
         async addPassword(Title, Description, Url, Username, Password) {
             return new Promise((resolve) => {
                 ipcRenderer.once('passwords:addResponse', (_, arg) => {

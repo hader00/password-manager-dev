@@ -86,7 +86,7 @@ class DatabaseConnector {
                     } else {
                         // console.log(result)
                         // [ RowDataPacket { Password: 'anEncodedPassword' } ]
-                        if (result[0].Password === password) {
+                        if (result[0].Password === DatabaseCrypto.getHMAC(password)) {
                             let userID = result[0].UserID;
                             console.log('remoteLogin:response', {remoteLoginSuccess: true})
                             resolve({userID: userID, remoteLoginSuccess: true})
@@ -100,7 +100,7 @@ class DatabaseConnector {
         return await new Promise((resolve, reject) => {
             this.database.query(
                 "INSERT INTO Users (FirstName, LastName, Email, Password) VALUES (?,?,?,?)",
-                [firstName, lastName, email, password],
+                [firstName, lastName, email, DatabaseCrypto.getHMAC(password)],
                 (err, result) => {
                     if (err || result.length === 0) {
                         console.log("error => ", err);

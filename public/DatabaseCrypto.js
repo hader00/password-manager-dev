@@ -5,9 +5,15 @@ const {ENCRYPTED_EXTENSION, ALGORITHM} = require("./Util");
 const secret = "pppppppppppppppppppppppppppppppp";
 
 class DatabaseCrypto {
+    static getHMAC(password) {
+        const hmac = crypto.createHmac('sha256', secret);
+        const data = hmac.update(password);
+        return data.digest('hex');
+    }
+
     static encrypt(password) {
         const iv = Buffer.from(crypto.randomBytes(16));
-        const cipher = crypto.createCipheriv("aes-256-ctr",  Buffer.from(secret), iv);
+        const cipher = crypto.createCipheriv(ALGORITHM,  Buffer.from(secret), iv);
         const encryptedPassword = Buffer.concat([
             cipher.update(password),
             cipher.final()
@@ -20,7 +26,7 @@ class DatabaseCrypto {
         const iv = Buffer.from(password.slice(0, 32), "hex");
         console.log("iv2 => ", iv, iv.toString("hex"), password.slice(32, password.length))
         const decipher = crypto.createDecipheriv(
-            "aes-256-ctr", Buffer.from(secret), iv);
+            ALGORITHM, Buffer.from(secret), iv);
         const decryptedPassword = Buffer.concat([
             decipher.update(Buffer.from(password.slice(32, password.length), "hex")),
             decipher.final()

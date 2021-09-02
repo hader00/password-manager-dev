@@ -7,7 +7,8 @@ export class Field extends Component {
         super(props);
         this.state = {
             passwordType: "password",
-            value: this.props.value,
+            showPassword: false,
+            password: "",
             encrypted: this.props.value,
         }
         console.log(props.name, props.showViewPassOptions, props.passwordType)
@@ -18,7 +19,7 @@ export class Field extends Component {
         return (
             <div>
                 <label htmlFor={props.name}><b>{props.text}</b></label>
-                <input value={this.state.value} type={(props.type === "password") ? this.state.passwordType : props.type}
+                <input value={this.state.showPassword ? this.state.password : props.value} type={(props.type === "password") ? this.state.passwordType : props.type}
                        placeholder={props.placeholder}
                        name={props.name} id={props.id} onChange={props.onChange}/>
                 {(props.name === "Password" && props.showViewPassOptions) ?
@@ -28,7 +29,8 @@ export class Field extends Component {
                                 // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
                                 this.setState({passwordType: "text"});
                                 window.electron.decryptPassword(this.props.value).then(r => {
-                                    this.setState({value: r.password});
+                                    this.setState({password: r.password});
+                                    this.setState({showPassword: true});
                                 })
                             }}>
                                 ViewPassWord
@@ -47,7 +49,8 @@ export class Field extends Component {
                             <button onClick={() => {
                                 // Todo nullify on view change or on hide
                                 this.setState({passwordType: "password"});
-                                this.setState({value: this.state.encrypted});
+                                this.setState({password: ""});
+                                this.setState({showPassword: false});
                             }}>
                                 HidePassWord
                             </button>

@@ -40,6 +40,12 @@ export class PasswordItemView extends Component {
                             <button onClick={this.openBrowser}>{"Visit page"}</button> :
                                 <button id="submit-button" type="submit" onClick={this.addPassword}>{"Save"}</button>
                 }
+                {
+                    (this.props.addingNewItem) ?
+                        <button className="submit-button" type="button" onClick={this.generatePassword}>{"GeneratePassword"}</button>
+                        :
+                        <></>
+                }
             </>
         )
     };
@@ -50,6 +56,23 @@ export class PasswordItemView extends Component {
 
     popView = () => {
         this.props.parentPasswordView(0, false, false);
+    }
+
+    generatePassword = () => {
+        let length = 10
+        let specialCharacters = true
+        let numbers = true
+        let lowerCase = true
+        let upperCase = true
+        window.electron.generatePassword(length, specialCharacters, numbers, lowerCase, upperCase).then((result) => {
+            console.log(result)
+            if (result.password.length > 0) {
+                this.setState({Password: result.password})
+            } else {
+                console.log("fail")
+                console.log(result)
+            }
+        });
     }
 
     addPassword = () => {
