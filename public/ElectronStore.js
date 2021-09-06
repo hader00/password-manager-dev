@@ -37,4 +37,4 @@ class ElectronStore {
 
 
 // CommonJS Exports
-module.exports = { ElectronStore };
+module.exports = {ElectronStore};

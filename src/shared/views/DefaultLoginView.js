@@ -1,13 +1,11 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Field from "../components/Field";
 import HiddenField from "../components/HiddenField";
 import ViewType from "../other/ViewType";
 import PropTypes from "prop-types";
+import {DefaultLoginViewController} from "../../ViewController";
 
-class DefaultLoginView extends Component {
-    constructor(props) {
-        super(props);
-    }
+class DefaultLoginView extends DefaultLoginViewController {
 
     render() {
         return (
@@ -28,7 +26,7 @@ class DefaultLoginView extends Component {
                     </label>
                     <div className="container-flex">
                         <button className="create-account-btn" id="create-account-button" type="button"
-                                onClick={() => this.handleRegistrationViewChange(ViewType.registrationView)}>Create
+                                onClick={() => this.popAndChangeView(ViewType.registrationView)}>Create
                             Account
                         </button>
                         <button className="local-account-btn" id="local-login-button" type="button"
@@ -40,21 +38,12 @@ class DefaultLoginView extends Component {
         );
     }
 
-    handleRegistrationViewChange = (view) => {
-        this.props.changeParentsActiveView(view);
+    componentDidMount() {
     }
 
 
     handleLocalLoginViewChange = () => {
-        // todo needs to be handled other way by saving previous user state (custom location etc)
-        window.electron.dbExists().then((result) => {
-            console.log(result)
-            if (result.dbExists === true) {
-                this.handleRegistrationViewChange(ViewType.localLoginView);
-            } else {
-                this.handleRegistrationViewChange(ViewType.localRegistrationView);
-            }
-        });
+        this.dbExists();
     }
 
     submitLogin = async (e) => {
@@ -64,18 +53,8 @@ class DefaultLoginView extends Component {
 
         if (userServer.checkValidity() && userEmail.checkValidity() && userPassword.checkValidity()) {
             e.preventDefault();
-            userServer = userServer.value
-            userEmail = userEmail.value
-            userPassword = userPassword.value
-            window.electron.submitLogin(userServer, userEmail, userPassword).then((result) => {
-                if (result.remoteLoginSuccess === true) {
-                    this.handleRegistrationViewChange(ViewType.passwordListView);
-                }
-            })
+            this.submitSubmitLogin(userServer.value, userEmail.value, userPassword.value)
         }
-    }
-
-    componentDidMount() {
     }
 }
 

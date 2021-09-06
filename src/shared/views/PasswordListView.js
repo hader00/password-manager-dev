@@ -1,10 +1,11 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PasswordItemView from "./PasswordItemView";
 import Header from "../components/Header";
 import PasswordItem from "../components/PasswordItem";
 import PropTypes from "prop-types";
+import {PasswordListViewController} from "../../ViewController";
 
-export class PasswordListView extends Component {
+export class PasswordListView extends PasswordListViewController {
 
     constructor(props) {
         super(props);
@@ -34,15 +35,6 @@ export class PasswordListView extends Component {
         this.fetchAllPPasswords();
     }
 
-    fetchAllPPasswords = () => {
-        console.log("Fetching all passwords");
-        window.electron.fetchAllPPasswords().then((result) => {
-            console.log(result);
-            this.setState({response: result.response});
-            this.setState({passwords: result.response});
-        });
-    }
-
     searchItems = (searchValue) => {
         this.setState({searchInput: searchValue});
         if (this.state.searchInput !== '') {
@@ -62,8 +54,9 @@ export class PasswordListView extends Component {
         this.setState({inputReadOnly: openTypeVal});
         this.setState({addingNewItem: addingNewItemVal});
     }
+
     render() {
-    if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
+        if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
             return (
                 <div className="container">
                     <PasswordItemView
@@ -78,13 +71,15 @@ export class PasswordListView extends Component {
         } else {
             return (
                 <div className="container">
-                    <Header buttonText="+" hStyle="input" buttonFunc={() => {this.setState({addingNewItem: true})}} onChange={(e) => this.searchItems(e.target.value)}/>
+                    <Header buttonText="+" hStyle="input" buttonFunc={() => {
+                        this.setState({addingNewItem: true})
+                    }} onChange={(e) => this.searchItems(e.target.value)}/>
                     <div>
                         <p id="no-items"> {(this.state.passwords.size === 0) ? "No Passwords" : ""}</p>
                         <div id="passwords">
-                            {(this.state.searchInput.length > 1 && this.state.filteredPasswords.length >= 1)? (
+                            {(this.state.searchInput.length > 1 && this.state.filteredPasswords.length >= 1) ? (
                                 this.state.filteredPasswords.map((password) => {
-                                    return(
+                                    return (
                                         <PasswordItem
                                             key={password.Id}
                                             password={password}
@@ -95,7 +90,7 @@ export class PasswordListView extends Component {
                             ) : (
                                 this.state.passwords.length >= 1 ? (
                                     this.state.passwords.map((password) => {
-                                        return(
+                                        return (
                                             <PasswordItem
                                                 key={password.Id}
                                                 password={password}

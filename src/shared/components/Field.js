@@ -1,8 +1,9 @@
-import React, {Component} from 'react'
+import React from 'react'
 import PropTypes from "prop-types";
+import {FieldController} from "../../ViewController";
 
 
-export class Field extends Component {
+export class Field extends FieldController {
     constructor(props) {
         super(props);
         this.state = {
@@ -10,6 +11,7 @@ export class Field extends Component {
             showPassword: false,
             password: "",
             encrypted: this.props.value,
+            passwordIsEncrypted: true
         }
         console.log(props.name, props.showViewPassOptions, props.passwordType)
     }
@@ -19,27 +21,27 @@ export class Field extends Component {
         return (
             <div>
                 <label htmlFor={props.name}><b>{props.text}</b></label>
-                <input value={this.state.showPassword ? this.state.password : props.value} type={(props.type === "password") ? this.state.passwordType : props.type}
+                <input value={this.state.showPassword ? this.state.password : props.value}
+                       type={(props.type === "password") ? this.state.passwordType : props.type}
                        placeholder={props.placeholder}
                        name={props.name} id={props.id} onChange={props.onChange}/>
                 {(props.name === "Password" && props.showViewPassOptions) ?
                     (this.state.passwordType === "password") ?
                         <>
-                            <button onClick={() => {
+                            <button onClick={async () => {
                                 // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
                                 this.setState({passwordType: "text"});
-                                window.electron.decryptPassword(this.props.value).then(r => {
-                                    this.setState({password: r.password});
-                                    this.setState({showPassword: true});
-                                })
+                                const password = await this.decryptPassword(this.props.value)
+                                this.setState({password: password});
+                                this.setState({showPassword: true});
                             }}>
                                 ViewPassWord
                             </button>
-                            <button onClick={(e) => {
+                            <button onClick={async (e) => {
                                 e.preventDefault();
-                                window.electron.decryptPassword(this.props.value).then(r => {
-                                    this.copy(r.password)
-                                })
+                                const password = await this.decryptPassword(this.props.value)
+                                console.log("password => ", password);
+                                this.copy(password);
                             }}>
                                 CopyPassWord
                             </button>
@@ -54,11 +56,11 @@ export class Field extends Component {
                             }}>
                                 HidePassWord
                             </button>
-                            <button onClick={(e) => {
+                            <button onClick={async (e) => {
                                 e.preventDefault();
-                                window.electron.decryptPassword(this.props.value).then(r => {
-                                    this.copy(r.password)
-                                })
+                                const password = await this.decryptPassword(this.props.value)
+                                console.log("password => ", password);
+                                this.copy(password);
                             }}>
                                 CopyPassWord
                             </button>
@@ -75,7 +77,7 @@ export class Field extends Component {
         // todo add visual popup
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const props = this.props
         let inputField = document.getElementById(props.id)
 
@@ -84,6 +86,13 @@ export class Field extends Component {
         }
         if (props.inputReadOnly) {
             inputField.setAttribute("readOnly", props.inputReadOnly)
+        }
+        if (!props.inputReadOnly && props.name === "Password") {
+            this.decryptPassword(props.value).then(r =>{
+                this.setState({showPassword: true})
+                this.setState({passwordIsEncrypted: false})
+                this.setState({password: r })
+            })
         }
     }
 }

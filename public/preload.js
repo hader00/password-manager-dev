@@ -1,18 +1,18 @@
 process.once('loaded', () => {
     const electron = require('electron')
-    const { contextBridge, ipcRenderer, shell } = electron;
+    const {contextBridge, ipcRenderer, shell} = electron;
 
     contextBridge.exposeInMainWorld('electron', {
-        on (eventName, callback) {
+        on(eventName, callback) {
             ipcRenderer.on(eventName, callback)
         },
 
-        async invoke (eventName, ...params) {
+        async invoke(eventName, ...params) {
             return await ipcRenderer.invoke(eventName, ...params)
         },
 
 
-        async  localLogin(password, location) {
+        async localLogin(password, location) {
             return new Promise((resolve) => {
                 ipcRenderer.once('localLogin:response', (_, response) => {
                     resolve(response);
@@ -22,7 +22,7 @@ process.once('loaded', () => {
             });
         },
 
-        async  selectFile() {
+        async selectFile() {
             return new Promise((resolve) => {
                 ipcRenderer.once('selectDatabase:response', (_, response) => {
                     resolve(response);
@@ -31,7 +31,7 @@ process.once('loaded', () => {
             });
         },
 
-        async  selectFolder() {
+        async selectFolder() {
             return new Promise((resolve) => {
                 ipcRenderer.once('selectFolder:response', (_, response) => {
                     resolve(response);
@@ -56,15 +56,6 @@ process.once('loaded', () => {
                     resolve(response);
                 });
                 ipcRenderer.send('db:exists');
-            });
-        },
-
-        async loginMode() {
-            return new Promise((resolve) => {
-                ipcRenderer.once('loginMode:response', (_, arg) => {
-                    resolve(arg);
-                });
-                ipcRenderer.send('loginMode:get');
             });
         },
 
@@ -110,15 +101,6 @@ process.once('loaded', () => {
                     resolve(arg);
                 });
                 ipcRenderer.send('password:decrypt', password);
-            });
-        },
-
-        async dbMessenger(message) {
-            return new Promise((resolve) => {
-                ipcRenderer.once('db-reply', (_, arg) => {
-                    resolve(arg);
-                });
-                ipcRenderer.send('db-message', message);
             });
         },
 

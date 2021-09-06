@@ -1,0 +1,338 @@
+.App {
+    text-align: left;
+}
+
+.App-logo {
+    height: 40vmin;
+    pointer-events: none;
+}
+
+/* Full-width inputs */
+input[type=text], [type=email], input[type=password] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+button {
+    background-color: #04AA6D;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Add a hover effect for buttons */
+button:hover {
+    opacity: 0.8;
+}
+
+/* Extra style for the cancel button (red) */
+.cancel-btn {
+    width: auto;
+    padding: 10px 18px;
+    background-color: #f44336;
+}
+
+.info-btn {
+    width: auto;
+    height: auto;
+    border: none;
+    margin: 5px;
+    background-color: #36a2f4;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.space-between {
+    justify-content: space-between;
+}
+
+.small-btn {
+    padding: 7px 10px;
+    margin: 4px 2px;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    background-color: rgba(155, 244, 54, 0.89);
+}
+
+/* Extra style for the cancel button (red) */
+.create-account-btn {
+    padding: 10px 18px;
+    background-color: #36a2f4;
+}
+
+/* Extra style for the cancel button (red) */
+.local-account-btn {
+    padding: 10px 18px;
+    background-color: #6c7c86;
+}
+
+/* Center the avatar image inside this container */
+.imgcontainer {
+    text-align: center;
+    margin: 24px 0 12px 0;
+}
+
+/* Avatar image */
+img.avatar {
+    width: 40%;
+    border-radius: 50%;
+}
+
+/* Add padding to containers */
+.container {
+    padding: 8px;
+}
+
+/* Add padding to containers */
+.container-flex {
+    padding: 8px;
+    display: flex;
+}
+
+/* The "Forgot password" text */
+span.psw {
+    float: right;
+    padding-top: 16px;
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+    span.psw {
+        display: block;
+        float: none;
+    }
+
+    .cancelbtn {
+        width: 100%;
+    }
+}
+
+/************** Hide Server ********/
+#user-server {
+    display: none;
+}
+
+#user-file-location {
+    display: none;
+}
+
+/************** Header ************/
+
+header {
+    background: lightgray;
+    display: flex;
+    flex-flow: row;
+    padding: 0px 10px;
+    font-weight: bold;
+    border-bottom: 1px solid silver;
+    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header > #show-modal {
+    padding: 4px 12px 5px;
+    margin-right: 10px;
+    font-size: 30px;
+}
+
+.header > #search {
+    flex-grow: 1;
+}
+
+.header > input {
+    font-size: 20px;
+    border-radius: 5px;
+    border: 1px solid silver;
+    padding: 0 10px;
+}
+
+
+.header > label {
+    flex-grow: 1;
+    font-size: 20px;
+    border-radius: 5px;
+    text-align: center;
+    padding: 15px 10px 0;
+}
+
+.header > input::placeholder {
+    color: lightgray;
+}
+
+/************** Tooltip ***********/
+.has-tip:after {
+    font-family: "Glyphicons Halflings", serif;
+    content: " \e085";
+    color: #aaaaaa;
+}
+
+.label-with-tooltip {
+    display: flex;
+    align-items: center;
+}
+
+.label-with-tooltip-question-mark {
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    padding: 5px;
+    background: #f2f2f2;
+    color: #A5A5A5;
+    text-align: center;
+    align-items: normal;
+    font: 16px Arial, sans-serif;
+}
+
+.label-with-tooltip-question-mark:hover {
+    background: #cccccc;
+}
+
+/************** Toggle **************/
+/* The switch - the box around the slider */
+
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.switch-label {
+    padding-right: 10px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/********** Passwords *********/
+.password-item {
+    text-align: left;
+    border: 1px solid #ccc;
+    height: 40px;
+}
+
+.password-item p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/*************** MODAL *****************/
+
+#show-modal {
+    padding: 0px 12px 5px;
+    margin-right: 10px;
+    font-size: 30px;
+}
+
+#search {
+    flex-grow: 1;
+}
+
+main {
+    flex-grow: 1;
+    overflow-y: scroll;
+}
+
+#no-items {
+    font-weight: bold;
+    color: silver;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 100px;
+    z-index: -1;
+}
+
+#modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+    display: none;
+}
+
+#modal button {
+    padding: 10px;
+}
+
+#close-modal {
+    background: white;
+    color: black;
+    margin-left: 15px;
+}
+
+#add-item {
+    margin-left: 25px;
+}

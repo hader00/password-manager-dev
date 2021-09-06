@@ -30,4 +30,13 @@ function isEmpty(item) {
     return item === undefined || item === null || item === "" || item === 'undefined'
 }
 
-module.exports = { DBModeEnum, ENCRYPTED_EXTENSION, DEFAULT_LOCAL_DB_LOCATION, ALGORITHM, MYSQL_CONFIG, VIEW_TYPE, DATABASE_FILENAME, isEmpty };
+module.exports = {
+    DBModeEnum,
+    ENCRYPTED_EXTENSION,
+    DEFAULT_LOCAL_DB_LOCATION,
+    ALGORITHM,
+    MYSQL_CONFIG,
+    VIEW_TYPE,
+    DATABASE_FILENAME,
+    isEmpty
+};

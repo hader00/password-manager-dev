@@ -17,4 +17,4 @@ class PasswordGenerator {
     }
 }
 
-module.exports = { PasswordGenerator };
+module.exports = {PasswordGenerator};

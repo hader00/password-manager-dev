@@ -185,5 +185,6 @@ class DatabaseConnector {
 
 
 }
+
 // CommonJS Exports
-module.exports = { DatabaseConnector };
+module.exports = {DatabaseConnector};

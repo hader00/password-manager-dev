@@ -13,7 +13,7 @@ class DatabaseCrypto {
 
     static encrypt(password) {
         const iv = Buffer.from(crypto.randomBytes(16));
-        const cipher = crypto.createCipheriv(ALGORITHM,  Buffer.from(secret), iv);
+        const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(secret), iv);
         const encryptedPassword = Buffer.concat([
             cipher.update(password),
             cipher.final()
@@ -85,4 +85,4 @@ class DatabaseCrypto {
     }
 }
 
-module.exports = { DatabaseCrypto };
+module.exports = {DatabaseCrypto};

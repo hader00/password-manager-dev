@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
-import './App.css'
-import SwitchComponents from './components/SwitchComponent';
-import DefaultLoginView from "./views/DefaultLoginView";
-import RegistrationView from "./views/RegistrationView";
-import LocalLoginView from "./views/LocalLoginView";
-import PasswordsListView from "./views/PasswordListView";
-import ViewType from "./other/ViewType"
-import LocalRegistrationView from "./views/LocalRegistrationView";
+import './shared/App.css'
+import SwitchComponents from './shared/components/SwitchComponent';
+import DefaultLoginView from "./shared/views/DefaultLoginView";
+import RegistrationView from "./shared/views/RegistrationView";
+import LocalLoginView from "./shared/views/LocalLoginView";
+import PasswordsListView from "./shared/views/PasswordListView";
+import ViewType from "./shared/other/ViewType"
+import LocalRegistrationView from "./shared/views/LocalRegistrationView";
 
 
 class App extends Component {
@@ -16,10 +16,6 @@ class App extends Component {
         this.state = {
             activeView: null,
         }
-    }
-
-    changeActiveView = (newActiveView) => {
-        this.setState({activeView: newActiveView});
     }
 
     render() {
@@ -42,7 +38,13 @@ class App extends Component {
     }
 
     componentDidMount() {
-        window.electron.getDefaultView().then((response) => {return this.setState({activeView: response.defaultView})});
+        window.electron.getDefaultView().then((response) => {
+            return this.setState({activeView: response.defaultView})
+        });
+    }
+
+    changeActiveView = (newActiveView) => {
+        this.setState({activeView: newActiveView});
     }
 }
 
