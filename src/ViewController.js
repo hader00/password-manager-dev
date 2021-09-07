@@ -79,17 +79,18 @@ class DefaultLoginViewController extends Component {
 }
 
 class PasswordItemViewController extends Component {
-    //
-    popView = () => {
-        this.props.parentPasswordView(0, false, false);
+    decryptPassword = async (encryptedPassword) => {
+        return await window.electron.decryptPassword(encryptedPassword).then(r => {
+            return r.password
+        })
     }
     //
-    generatePassword = () => {
-        let length = 10
-        let specialCharacters = true
-        let numbers = true
-        let lowerCase = true
-        let upperCase = true
+    popView = () => {
+        this.props.changeParentsActiveView(ViewType.passwordListView);
+    }
+    //
+    generatePassword = (length, specialCharacters, numbers, lowerCase, upperCase) => {
+        console.log(length, specialCharacters, numbers, lowerCase, upperCase)
         window.electron.generatePassword(length, specialCharacters, numbers, lowerCase, upperCase).then((result) => {
             console.log(result)
             if (result.password.length > 0) {
@@ -110,7 +111,6 @@ class PasswordItemViewController extends Component {
         window.electron.addPassword(Title, Description, Url, Username, Password).then((result) => {
             if (result.addSuccess === true) {
                 console.log(result)
-                this.props.fetchAllHandler()
                 this.popView();
             } else {
                 console.log("fail")
@@ -130,7 +130,6 @@ class PasswordItemViewController extends Component {
         window.electron.updatePassword(Id, Title, Description, Url, Username, Password).then((result) => {
             if (result.updateSuccess === true) {
                 console.log(result)
-                this.props.fetchAllHandler()
                 this.popView();
             } else {
                 console.log("fail")
@@ -145,21 +144,12 @@ class PasswordItemViewController extends Component {
             console.log("deleting")
             if (result.deleteSuccess === true) {
                 console.log(result)
-                this.props.fetchAllHandler()
                 this.popView();
             } else {
                 console.log("fail")
                 console.log(result)
             }
         });
-    }
-}
-
-class FieldController extends Component {
-    decryptPassword = async (encryptedPassword) => {
-        return await window.electron.decryptPassword(encryptedPassword).then(r => {
-            return r.password
-        })
     }
 }
 
@@ -198,7 +188,6 @@ export {
     LocalRegistrationViewController,
     DefaultLoginViewController,
     PasswordItemViewController,
-    FieldController,
     PasswordListViewController,
     RegistrationViewController
 }

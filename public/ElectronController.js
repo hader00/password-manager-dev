@@ -86,15 +86,14 @@ class ElectronController {
                     e.sender.send('defaultView:response', {defaultView: defaultView});
                 });
                 // decrypt
-                ipcMain.on('password:decrypt', (e, password) => {
-                    const decryptedPassword = this.controller.decryptPassword(password).then(decryptedPassword => {
-                        console.log("decryptedPassword => ", decryptedPassword)
-                        e.sender.send('password:decryptResponse', {password: decryptedPassword});
-                    })
+                ipcMain.on('password:decrypt', async (e, password) => {
+                    const decryptedPassword = await this.controller.decryptPassword(password)
+                    console.log("decryptedPassword => ", decryptedPassword)
+                    e.sender.send('password:decryptResponse', {password: decryptedPassword});
                 });
                 // Generate password
-                ipcMain.on('password:generate', (e, length, specialCharacters, numbers, lowerCase, upperCase) => {
-                    const generatedPassword = this.controller.generatePassword(length, specialCharacters, numbers, lowerCase, upperCase)
+                ipcMain.on('password:generate', async (e, length, specialCharacters, numbers, lowerCase, upperCase) => {
+                    const generatedPassword = await this.controller.generatePassword(length, specialCharacters, numbers, lowerCase, upperCase)
                     console.log("generatedPassword => ", generatedPassword)
                     e.sender.send('password:generateResponse', {password: generatedPassword});
                 });
@@ -142,20 +141,20 @@ class ElectronController {
                     e.sender.send('remoteRegistration:response', {remoteRegistrationSuccess: remoteRegistrationSuccess});
                 });
                 // Password Add
-                ipcMain.on('passwords:add', (e, Title, Description, Url, Username, Password) => {
-                    const addSuccess = this.controller.addPassword(Title, Description, Url, Username, Password);
+                ipcMain.on('passwords:add', async (e, Title, Description, Url, Username, Password) => {
+                    const addSuccess = await this.controller.addPassword(Title, Description, Url, Username, Password);
                     console.log("addSuccess => ", addSuccess)
                     e.sender.send('passwords:addResponse', {addSuccess: addSuccess});
                 });
                 // Password Update
-                ipcMain.on('passwords:update', (e, Id, Title, Description, Url, Username, Password) => {
-                    const updateSuccess = this.controller.updatePassword(Id, Title, Description, Url, Username, Password);
+                ipcMain.on('passwords:update', async (e, Id, Title, Description, Url, Username, Password) => {
+                    const updateSuccess = await this.controller.updatePassword(Id, Title, Description, Url, Username, Password);
                     console.log("updateSuccess => ", updateSuccess)
                     e.sender.send('passwords:updateResponse', {updateSuccess: updateSuccess});
                 });
                 // Password Delete
-                ipcMain.on('passwords:delete', (e, Id) => {
-                    const deleteSuccess = this.controller.deletePassword(Id);
+                ipcMain.on('passwords:delete', async (e, Id) => {
+                    const deleteSuccess = await this.controller.deletePassword(Id);
                     console.log("deleteSuccess => ", deleteSuccess)
                     e.sender.send('passwords:deleteResponse', {deleteSuccess: deleteSuccess});
                 });

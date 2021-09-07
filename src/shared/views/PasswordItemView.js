@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import Field from "../components/Field";
 import Header from "../components/Header";
 import {PasswordItemViewController} from "../../ViewController";
+import PasswordField from "../components/PasswordField";
+import PasswordGenerator from "../components/PasswordGenerator";
 
 export class PasswordItemView extends PasswordItemViewController {
 
@@ -15,6 +17,13 @@ export class PasswordItemView extends PasswordItemViewController {
         super(props);
         this.state = {
             ...this.props.password,
+            generator: {
+                length: 10,
+                specialCharacters: false,
+                numbers: false,
+                lowerCase: false,
+                upperCase: false,
+            }
         }
         console.log(this.props.password)
     }
@@ -31,7 +40,7 @@ export class PasswordItemView extends PasswordItemViewController {
                     <Field text={"Username"} value={this.state.Username} type={"text"} placeholder={"Enter Username"}
                            name={"Username"} id={"Username"} inputReadOnly={this.props.inputReadOnly}
                            inputRequired={true} onChange={e => this.onChange(e)}/>
-                    <Field text={"Password"} value={this.state.Password} type={"password"}
+                    <PasswordField text={"Password"} value={this.state.Password} type={"password"}
                            placeholder={"Enter Password"} name={"Password"} id={"Password"}
                            inputReadOnly={this.props.inputReadOnly} inputRequired={true}
                            onChange={e => this.onChange(e)} showViewPassOptions={!this.props.addingNewItem}/>
@@ -56,8 +65,11 @@ export class PasswordItemView extends PasswordItemViewController {
                 }
                 {
                     (this.props.addingNewItem) ?
+                        <div>
+                            <PasswordGenerator generator={this.state.generator} onChange={this.onChange} setGeneratorState={this.onChangeGenerator}/>
                         <button className="submit-button" type="button"
-                                onClick={this.generatePassword}>{"GeneratePassword"}</button>
+                                onClick={(e) => {e.preventDefault();let gen = this.state.generator; this.generatePassword(gen.length, gen.specialCharacters, gen.numbers, gen.lowerCase, gen.upperCase)}}>{"GeneratePassword"}</button>
+                        </div>
                         :
                         <></>
                 }
@@ -69,9 +81,20 @@ export class PasswordItemView extends PasswordItemViewController {
         this.setState({[e.target.name]: e.target.value});
     }
 
+    onChangeGenerator = (name, value) => {
+        const newGenerator = {...this.state.generator, [name]: value}
+        this.setState({generator: newGenerator});
+    }
 
     openBrowser = () => {
         window.electron.shellOpenExternal("https://" + this.state.Url);
+    }
+    componentDidMount() {
+        if (!this.props.addingNewItem) {
+        this.decryptPassword(this.state.Password).then(password => {
+            this.setState({Password: password})
+        });
+        }
     }
 }
 

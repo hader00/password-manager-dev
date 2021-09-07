@@ -7,6 +7,7 @@ import LocalLoginView from "./shared/views/LocalLoginView";
 import PasswordsListView from "./shared/views/PasswordListView";
 import ViewType from "./shared/other/ViewType"
 import LocalRegistrationView from "./shared/views/LocalRegistrationView";
+import PasswordItemView from "./shared/views/PasswordItemView";
 
 
 class App extends Component {
@@ -15,6 +16,7 @@ class App extends Component {
         super(props);
         this.state = {
             activeView: null,
+            passwordItem: {},
         }
     }
 
@@ -31,7 +33,15 @@ class App extends Component {
                     <RegistrationView componentName={ViewType.registrationView}
                                       changeParentsActiveView={this.changeActiveView}/>
                     <PasswordsListView componentName={ViewType.passwordListView}
-                                       changeParentsActiveView={this.changeActiveView}/>
+                                       changeParentsActiveView={this.changeActiveView}
+                                       setPasswordItem={this.setPasswordItem}/>
+                    <PasswordItemView
+                        componentName={ViewType.passwordItem}
+                        changeParentsActiveView={this.changeActiveView}
+                        password={this.state.passwordItem.password}
+                        inputReadOnly={this.state.passwordItem.inputReadOnly}
+                        addingNewItem={this.state.passwordItem.addingNewItem}
+                    />
                 </SwitchComponents>
             </div>
         );
@@ -45,6 +55,10 @@ class App extends Component {
 
     changeActiveView = (newActiveView) => {
         this.setState({activeView: newActiveView});
+    }
+
+    setPasswordItem = (newPasswordItem) => {
+        this.setState({passwordItem: newPasswordItem});
     }
 }
 

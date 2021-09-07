@@ -1,9 +1,9 @@
 import React from 'react';
-import PasswordItemView from "./PasswordItemView";
 import Header from "../components/Header";
 import PasswordItem from "../components/PasswordItem";
 import PropTypes from "prop-types";
 import {PasswordListViewController} from "../../ViewController";
+import ViewType from "../other/ViewType";
 
 export class PasswordListView extends PasswordListViewController {
 
@@ -57,17 +57,15 @@ export class PasswordListView extends PasswordListViewController {
 
     render() {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
-            return (
-                <div className="container">
-                    <PasswordItemView
-                        password={this.state.passwords.length >= 1 ? this.state.passwords.filter(pass => pass.Id === this.state.activePasswordID)[0] : []}
-                        parentPasswordView={this.handlePasswordView}
-                        inputReadOnly={this.state.inputReadOnly}
-                        addingNewItem={this.state.addingNewItem}
-                        fetchAllHandler={this.fetchAllPPasswords}
-                    />
-                </div>
-            );
+            this.props.setPasswordItem(
+                {
+                    password: this.state.passwords.length >= 1 ? this.state.passwords.filter(pass => pass.Id === this.state.activePasswordID)[0] : [],
+                    parentPasswordView: this.handlePasswordView,
+                    inputReadOnly: this.state.inputReadOnly,
+                    addingNewItem: this.state.addingNewItem
+                });
+            this.props.changeParentsActiveView(ViewType.passwordItem)
+            return (<></>)
         } else {
             return (
                 <div className="container">

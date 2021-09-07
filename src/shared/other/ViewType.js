@@ -4,6 +4,7 @@ const ViewType = {
     localRegistrationView: "local-registration",
     registrationView: "registration",
     passwordListView: "passwordList",
+    passwordItem: "passwordItem",
 };
 
 export default ViewType

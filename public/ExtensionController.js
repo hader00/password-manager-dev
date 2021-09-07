@@ -27,7 +27,7 @@ class ExtensionController {
                         response = {channel: 'defaultView:response', defaultView: defaultView}
                         break;
                     case "password:decrypt":
-                        const decryptedPassword = that.controller.decryptPassword(message.password)
+                        const decryptedPassword = await that.controller.decryptPassword(message.password)
                         response = {channel: 'password:decryptResponse', password: decryptedPassword}
                         break;
                     case "password:generate":

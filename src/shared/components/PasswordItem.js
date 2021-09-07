@@ -1,8 +1,7 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types';
 import appLogo from '../../logo.svg';
-
-const { URL } = require('url');
+import ImageWithDefault from "./ImageWithDefault";
 
 
 export class PasswordItem extends Component {
@@ -17,9 +16,7 @@ export class PasswordItem extends Component {
             <div className="password-item">
                 <div className="d-flex space-between">
                     <div>
-                        <img id="password-icon" alt="" style={{width: "30px", height: "30px"}}
-                             src={ this.imageExists(this.state.url) ? this.state.url : appLogo }
-                        />
+                        <ImageWithDefault default={appLogo} src={this.state.url} style={{width: "30px", height: "30px"}}/>
                     </div>
                     <div>
                         <p><b>{this.props.password.Title}</b></p>
@@ -42,15 +39,6 @@ export class PasswordItem extends Component {
         this.props.parentPasswordView(this.props.password.Id, true)
     }
 
-    isURLValid = (s) => {
-        try {
-            new URL(s);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    };
-
     checkURL = () => {
         let url = this.state.url
         if (!this.state.url.startsWith('http')) {
@@ -58,18 +46,6 @@ export class PasswordItem extends Component {
         }
         url = url.concat("/favicon.ico")
         this.setState({url: url})
-    }
-
-    imageExists(url){
-        let image = new Image();
-        image.src = url;
-        if (!image.complete) {
-            return false;
-        }
-        else if (image.height === 0) {
-            return false;
-        }
-        return true;
     }
 
     componentDidMount() {
