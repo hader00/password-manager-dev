@@ -54,8 +54,12 @@ class ExtensionController {
                         }
                         break;
                     case "remoteLogin:login":
-                        const remoteLoginSuccess = await that.controller.remoteLogin(message.server, message.email, message.password);
+                        const remoteLoginSuccess = await that.controller.remoteLogin(message.server, message.email, message.password, message.saveEmail);
                         response = {channel: 'remoteLogin:response', remoteLoginSuccess: remoteLoginSuccess};
+                        break;
+                    case "email:get":
+                        const email = await that.controller.getEmail();
+                        response = {channel: 'email:response', email: email};
                         break;
                     case "remoteRegistration:register":
                         const remoteRegistrationSuccess = that.controller.remoteRegistration(message.server, message.email, message.password, message.confirmationPassword, message.firstName, message.lastName);

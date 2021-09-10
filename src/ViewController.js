@@ -65,8 +65,8 @@ class DefaultLoginViewController extends Component {
         });
     }
     //
-    submitSubmitLogin = (userServer, userEmail, userPassword) => {
-        window.electron.submitLogin(userServer, userEmail, userPassword).then((result) => {
+    submitSubmitLogin = (userServer, userEmail, userPassword, saveEmail) => {
+        window.electron.submitLogin(userServer, userEmail, userPassword, saveEmail).then((result) => {
             if (result.remoteLoginSuccess === true) {
                 this.popAndChangeView(ViewType.passwordListView);
             }
@@ -75,6 +75,15 @@ class DefaultLoginViewController extends Component {
     //
     popAndChangeView = (destinationView) => {
         this.props.changeParentsActiveView(destinationView);
+    }
+    //
+    getEmail = () => {
+        window.electron.getEmail().then((result) => {
+            if (result.email !== "") {
+                this.setState({email: result.email})
+                this.setState({saveEmail: true})
+            }
+        })
     }
 }
 

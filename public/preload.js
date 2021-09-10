@@ -113,12 +113,12 @@ process.once('loaded', () => {
             });
         },
 
-        async submitLogin(userServer, userEmail, userPassword) {
+        async submitLogin(userServer, userEmail, userPassword, saveEmail) {
             return new Promise((resolve) => {
                 ipcRenderer.once('remoteLogin:response', (_, arg) => {
                     resolve(arg);
                 });
-                ipcRenderer.send('remoteLogin:login', userServer, userEmail, userPassword);
+                ipcRenderer.send('remoteLogin:login', userServer, userEmail, userPassword, saveEmail);
             });
         },
 
@@ -128,6 +128,15 @@ process.once('loaded', () => {
                     resolve(arg);
                 });
                 ipcRenderer.send('remoteRegistration:register', userServer, userEmail, userPassword, userConfirmPassword, userFirstName, userLastName);
+            });
+        },
+
+        async getEmail() {
+            return await new Promise((resolve) => {
+                ipcRenderer.once('email:response', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('email:get');
             });
         },
 

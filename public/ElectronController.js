@@ -22,24 +22,6 @@ class ElectronController {
 
     constructor(controller) {
         this.controller = controller;
-        this.electronStore = new ElectronStore();
-        this.databaseConnector = new DatabaseConnector();
-        this.isFirstLogin = false;
-        this.loginMode = null;
-        this.userID = null;
-        this.customDatabaseLocation = null;
-
-        // todo move to "clear" button + delete local DB before publishing
-        //this.electronStore.remove("defaultView");
-        //this.electronStore.remove("customDatabaseLocation");
-
-        if (!this.electronStore.has("defaultView")) {
-            this.isFirstLogin = true;
-            this.electronStore.set("defaultView", VIEW_TYPE.defaultLoginView);
-        } else {
-            this.customDatabaseLocation = this.electronStore.get("customDatabaseLocation");
-        }
-
         console.log("Main is alive")
         //
         this.init();
@@ -85,6 +67,11 @@ class ElectronController {
                     console.log("defaultView => ", defaultView)
                     e.sender.send('defaultView:response', {defaultView: defaultView});
                 });
+                ipcMain.on('email:get', async (e) => {
+                    const email = await this.controller.getEmail()
+                    console.log("savedEmail => ", email)
+                    e.sender.send('email:response', {email: email});
+                });
                 // decrypt
                 ipcMain.on('password:decrypt', async (e, password) => {
                     const decryptedPassword = await this.controller.decryptPassword(password)
@@ -122,21 +109,21 @@ class ElectronController {
                     e.sender.send('localLogin:registerResponse', {localRegistrationSuccess: localRegistrationSuccess});
                 });
                 // Remote Login
-                ipcMain.on('remoteLogin:login', (e, server, email, password) => {
-                    console.log('remoteLogin:login', e, server, email, password)
+                ipcMain.on('remoteLogin:login', (e, server, email, password, saveEmail) => {
+                    console.log('remoteLogin:login', e, server, email, password, saveEmail)
                     // todo add custom server
-                    this.controller.remoteLogin(server, email, password).then(remoteLoginSuccess => {
+                    this.controller.remoteLogin(server, email, password, saveEmail).then(remoteLoginSuccess => {
                         console.log("remoteLoginSuccess => ", remoteLoginSuccess)
                         e.sender.send('remoteLogin:response', {remoteLoginSuccess: remoteLoginSuccess});
                     })
 
                 });
                 // Remote Registration
-                ipcMain.on('remoteRegistration:register', (e, server, email, password, confirmationPassword, firstName, lastName) => {
+                ipcMain.on('remoteRegistration:register', async (e, server, email, password, confirmationPassword, firstName, lastName) => {
                     console.log('remoteRegistration:register', e, server, email, password, confirmationPassword, firstName, lastName)
                     // todo add custom server
                     // todo double check password
-                    const remoteRegistrationSuccess = this.controller.remoteRegistration(server, email, password, confirmationPassword, firstName, lastName)
+                    const remoteRegistrationSuccess = await this.controller.remoteRegistration(server, email, password, confirmationPassword, firstName, lastName)
                     console.log("remoteRegistrationSuccess => ", remoteRegistrationSuccess)
                     e.sender.send('remoteRegistration:response', {remoteRegistrationSuccess: remoteRegistrationSuccess});
                 });

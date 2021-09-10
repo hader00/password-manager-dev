@@ -11,6 +11,8 @@ const {DatabaseConnector} = require("./DatabaseConnector");
 const {DBModeEnum} = require("./Util");
 const url = require('url');
 const {PasswordGenerator} = require("./PasswordGenerator");
+const axios = require('axios');
+
 
 class Controller {
     constructor() {
@@ -107,9 +109,20 @@ class Controller {
         return localRegistrationResult
     }
 
-    async remoteLogin(server, email, password) {
+    async getEmail() {
+        let email = ""
+        if (this.electronStore.has("storedEmail")) {
+            email = await this.electronStore.get("storedEmail");
+        }
+        return email;
+    }
+
+    async remoteLogin(server, email, password, saveEmail) {
         // todo add custom server
         let remoteLoginSuccess = false
+        if (saveEmail) {
+            this.electronStore.set("storedEmail", email)
+        }
         if (this.databaseConnector.openDatabase(DBModeEnum.remote, "", "")) {
             remoteLoginSuccess = await this.databaseConnector.databaseRemoteLogin(email, password).then(r => {
                 if (r.remoteLoginSuccess) {
@@ -129,9 +142,30 @@ class Controller {
     }
 
     async remoteRegistration(server, email, password, confirmationPassword, firstName, lastName) {
-        // todo add custom server
+        // todo better handle of custom server
         // todo double check password
         let remoteRegistrationSuccess = false
+        if (server === "") {
+            server = "localhost:6868"
+        }
+        axios.post(`http://${server}/api/password-manager/user-create`, {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: password
+        })
+        .then(function (response) {
+            console.log(response);
+            this.userID = response.data.id;
+            this.loginMode = DBModeEnum.remote;
+            remoteRegistrationSuccess = true;
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        return remoteRegistrationSuccess
+
+        /*
         if (this.databaseConnector.openDatabase(DBModeEnum.remote, "", "")) {
             remoteRegistrationSuccess = await this.databaseConnector.databaseRemoteRegister(email, password, firstName, lastName).then(r => {
                 if (r.remoteRegistrationSuccess) {
@@ -148,28 +182,50 @@ class Controller {
         console.log("remoteRegistrationSuccess sync", remoteRegistrationSuccess);
         console.log("^should have same value");
         return remoteRegistrationSuccess
+        */
     }
 
     async addPassword(Title, Description, Url, Username, Password) {
         // todo reformat SQL
         let addSuccess = false;
         Password = DatabaseCrypto.encrypt(Password);
+        let server = "localhost:6868"
+
         if (this.databaseConnector.existsDatabase() && this.databaseConnector.getMode() === this.loginMode) {
             let msg = "";
             if (this.loginMode === DBModeEnum.local) {
                 msg = `INSERT INTO Passwords (Title, Description, Url, Username, Password)` +
                     `VALUES ('${Title}', '${Description}', '${Url}', ` +
                     `'${Username}', '${Password}');`
+                addSuccess = await this.databaseConnector.sendMessage(msg)
+                    .then(result => {
+                        console.log("--------------------------------------");
+                        console.log("addSuccess async", result.response)
+                        return result.response
+                    });
             } else {
-                msg = ["INSERT INTO Passwords (Title, Description, Url, Username, Password, UserID) VALUES (?,?,?,?,?,?)", [Title, Description, Url, Username, Password, this.userID]]
+                addSuccess = axios.post(`http://${server}/api/password-manager/user-create`, {
+                    title: Title,
+                    description: Description,
+                    url: Url,
+                    username: Username,
+                    password: Password,
+                    userID: this.userID,
+                })
+                    .then(function (response) {
+                        console.log(response);
+                        // todo add success
+                        return true
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        // todo add success
+                        return false
+                    });
+
+                //msg = ["INSERT INTO Passwords (Title, Description, Url, Username, Password, UserID) VALUES (?,?,?,?,?,?)", [Title, Description, Url, Username, Password, this.userID]]
             }
             console.log("sending")
-            addSuccess = await this.databaseConnector.sendMessage(msg)
-                .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("addSuccess async", result.response)
-                    return result.response
-                });
         }
         console.log("addSuccess sync", addSuccess);
         console.log("^should have same value");
