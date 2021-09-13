@@ -1,17 +1,8 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
 const windowStateKeeper = require('electron-window-state')
 const path = require('path');
 const isDev = require('electron-is-dev');
-const {DatabaseCrypto} = require("./DatabaseCrypto");
-const {DATABASE_FILENAME} = require("./Util");
-const {DEFAULT_LOCAL_DB_LOCATION} = require("./Util");
-const {isEmpty} = require("./Util");
-const {VIEW_TYPE} = require("./Util");
-const {ElectronStore} = require("./ElectronStore");
-const {DatabaseConnector} = require("./DatabaseConnector");
 const {DBModeEnum} = require("./Util");
-const url = require('url');
-const {PasswordGenerator} = require("./PasswordGenerator");
 
 if (process.platform === 'linux') {
     app.commandLine.appendSwitch('disable-gpu');
@@ -42,8 +33,8 @@ class ElectronController {
                 // explicitly with Cmd + Q.
                 app.on('window-all-closed', () => {
                     // todo encrypt database after app close or after certain time, call from sm else
-                    if (this.loginMode === DBModeEnum.local) {
-                        this.databaseConnector.closeDatabase();
+                    if (this.controller.getLoginMode() === DBModeEnum.local) {
+                        this.controller.getDatabaseConnector().closeDatabase();
                     }
                     if (process.platform !== 'darwin') {
                         app.quit();
@@ -97,14 +88,14 @@ class ElectronController {
                     e.sender.send('selectFolder:response', {selectedFolder: selectedFolder});
                 })
                 // Local Login
-                ipcMain.on('localLogin:login', (e, password, location) => {
-                    const localLoginSuccess = this.controller.localLogin(password, location);
+                ipcMain.on('localLogin:login', async (e, password, location) => {
+                    const localLoginSuccess = await this.controller.localLogin(password, location);
                     console.log("localLoginSuccess => ", localLoginSuccess)
                     e.sender.send('localLogin:response', {localLoginSuccess: localLoginSuccess});
                 });
                 // Local Registration
-                ipcMain.on('localLogin:register', (e, password, location) => {
-                    const localRegistrationSuccess = this.controller.localRegistration(password, location)
+                ipcMain.on('localLogin:register', async (e, password, location) => {
+                    const localRegistrationSuccess = await this.controller.localRegistration(password, location)
                     console.log("localRegistrationSuccess => ", localRegistrationSuccess)
                     e.sender.send('localLogin:registerResponse', {localRegistrationSuccess: localRegistrationSuccess});
                 });
@@ -128,20 +119,20 @@ class ElectronController {
                     e.sender.send('remoteRegistration:response', {remoteRegistrationSuccess: remoteRegistrationSuccess});
                 });
                 // Password Add
-                ipcMain.on('passwords:add', async (e, Title, Description, Url, Username, Password) => {
-                    const addSuccess = await this.controller.addPassword(Title, Description, Url, Username, Password);
+                ipcMain.on('passwords:add', async (e, title, description, url, username, password) => {
+                    const addSuccess = await this.controller.addPassword(title, description, url, username, password);
                     console.log("addSuccess => ", addSuccess)
                     e.sender.send('passwords:addResponse', {addSuccess: addSuccess});
                 });
                 // Password Update
-                ipcMain.on('passwords:update', async (e, Id, Title, Description, Url, Username, Password) => {
-                    const updateSuccess = await this.controller.updatePassword(Id, Title, Description, Url, Username, Password);
+                ipcMain.on('passwords:update', async (e, id, title, description, url, username, password) => {
+                    const updateSuccess = await this.controller.updatePassword(id, title, description, url, username, password);
                     console.log("updateSuccess => ", updateSuccess)
                     e.sender.send('passwords:updateResponse', {updateSuccess: updateSuccess});
                 });
                 // Password Delete
-                ipcMain.on('passwords:delete', async (e, Id) => {
-                    const deleteSuccess = await this.controller.deletePassword(Id);
+                ipcMain.on('passwords:delete', async (e, id) => {
+                    const deleteSuccess = await this.controller.deletePassword(id);
                     console.log("deleteSuccess => ", deleteSuccess)
                     e.sender.send('passwords:deleteResponse', {deleteSuccess: deleteSuccess});
                 });
@@ -189,13 +180,7 @@ class ElectronController {
             }
         })
         // Load the index.html from a url in dev mode
-        await this.win.loadURL(isDev ? 'http://localhost:3000' :
-            url.format({
-                pathname: path.join(__dirname, 'index.html'),
-                protocol: 'file:',
-                slashes: true
-            }));
-        //`file://${path.join(__dirname, '../build/index.html')}`);
+        await this.win.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
         //
         this.win.on('closed', () => this.win = null);
         // Open the DevTools.

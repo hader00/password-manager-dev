@@ -8,19 +8,21 @@ export class PasswordItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            url: this.props.password.Url
+            url: this.props.password.url
         }
     }
+
     render() {
         return (
             <div className="password-item">
                 <div className="d-flex space-between">
                     <div>
-                        <ImageWithDefault default={appLogo} src={this.state.url} style={{width: "30px", height: "30px"}}/>
+                        <ImageWithDefault default={appLogo} src={this.state.url}
+                                          style={{width: "30px", height: "30px"}}/>
                     </div>
                     <div>
-                        <p><b>{this.props.password.Title}</b></p>
-                        <p>{this.props.password.Username}</p>
+                        <p><b>{this.props.password.title}</b></p>
+                        <p>{this.props.password.username}</p>
                     </div>
                     <div className="d-flex space-between">
                         <button className="small-btn" onClick={this.openPasswordEdit}>Edit</button>
@@ -32,11 +34,11 @@ export class PasswordItem extends Component {
     };
 
     openPasswordEdit = () => {
-        this.props.parentPasswordView(this.props.password.Id, false)
+        this.props.parentPasswordView(this.props.password.id, false)
     }
 
     openPasswordView = () => {
-        this.props.parentPasswordView(this.props.password.Id, true)
+        this.props.parentPasswordView(this.props.password.id, true)
     }
 
     checkURL = () => {

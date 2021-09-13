@@ -103,7 +103,7 @@ class PasswordItemViewController extends Component {
         window.electron.generatePassword(length, specialCharacters, numbers, lowerCase, upperCase).then((result) => {
             console.log(result)
             if (result.password.length > 0) {
-                this.setState({Password: result.password})
+                this.setState({password: result.password})
             } else {
                 console.log("fail")
                 console.log(result)
@@ -112,12 +112,12 @@ class PasswordItemViewController extends Component {
     }
     //
     addPassword = () => {
-        let Title = this.state.Title;
-        let Description = this.state.Description;
-        let Url = this.state.Url;
-        let Username = this.state.Username;
-        let Password = this.state.Password;
-        window.electron.addPassword(Title, Description, Url, Username, Password).then((result) => {
+        let title = this.state.title;
+        let description = this.state.description;
+        let url = this.state.url;
+        let username = this.state.username;
+        let password = this.state.password;
+        window.electron.addPassword(title, description, url, username, password).then((result) => {
             if (result.addSuccess === true) {
                 console.log(result)
                 this.popView();
@@ -130,13 +130,13 @@ class PasswordItemViewController extends Component {
     //
     updatePassword = () => {
         console.log("updating")
-        let Id = this.state.Id;
-        let Title = this.state.Title;
-        let Description = this.state.Description;
-        let Url = this.state.Url;
-        let Username = this.state.Username;
-        let Password = this.state.Password;
-        window.electron.updatePassword(Id, Title, Description, Url, Username, Password).then((result) => {
+        let id = this.state.id;
+        let title = this.state.title;
+        let description = this.state.description;
+        let url = this.state.url;
+        let username = this.state.username;
+        let password = this.state.password;
+        window.electron.updatePassword(id, title, description, url, username, password).then((result) => {
             if (result.updateSuccess === true) {
                 console.log(result)
                 this.popView();
@@ -148,8 +148,8 @@ class PasswordItemViewController extends Component {
     }
     //
     deletePassword = () => {
-        let Id = this.state.Id;
-        window.electron.deletePassword(Id).then((result) => {
+        let id = this.state.id;
+        window.electron.deletePassword(id).then((result) => {
             console.log("deleting")
             if (result.deleteSuccess === true) {
                 console.log(result)

@@ -69,15 +69,15 @@ class ExtensionController {
                         };
                         break;
                     case "passwords:add":
-                        const addSuccess = that.controller.addPassword(message.Title, message.Description, message.Url, message.Username, message.Password);
+                        const addSuccess = that.controller.addPassword(message.title, message.description, message.url, message.username, message.password);
                         response = {channel: 'passwords:addResponse', addSuccess: addSuccess};
                         break;
                     case "passwords:update":
-                        const updateSuccess = that.controller.updatePassword(message.Id, message.Title, message.Description, message.Url, message.Username, message.Password);
+                        const updateSuccess = that.controller.updatePassword(message.id, message.title, message.description, message.url, message.username, message.password);
                         response = {channel: 'passwords:updateResponse', updateSuccess: updateSuccess};
                         break;
                     case "passwords:delete":
-                        const deleteSuccess = that.controller.deletePassword(message.Id);
+                        const deleteSuccess = that.controller.deletePassword(message.id);
                         response = {channel: 'passwords:deleteResponse', deleteSuccess: deleteSuccess};
                         break;
                     case "passwords:fetch":

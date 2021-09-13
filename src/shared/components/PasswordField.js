@@ -20,35 +20,35 @@ export class PasswordField extends Component {
                        placeholder={props.placeholder}
                        name={props.name} id={props.id} onChange={props.onChange}/>
                 {(this.state.type === "password") ?
-                        <>
-                            <button onClick={async () => {
-                                // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
-                                this.setState({type: "text"});
-                            }}>
-                                ViewPassWord
-                            </button>
-                            <button onClick={async (e) => {
-                                e.preventDefault();
-                                await this.copy(props.value);
-                            }}>
-                                CopyPassWord
-                            </button>
-                        </>
-                        :
-                        <>
-                            <button onClick={() => {
-                                // Todo nullify on view change or on hide
-                                this.setState({type: "password"});
-                            }}>
-                                HidePassWord
-                            </button>
-                            <button onClick={async (e) => {
-                                e.preventDefault();
-                                await this.copy(props.value);
-                            }}>
-                                CopyPassWord
-                            </button>
-                        </>
+                    <>
+                        <button onClick={async () => {
+                            // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
+                            this.setState({type: "text"});
+                        }}>
+                            ViewPassWord
+                        </button>
+                        <button onClick={async (e) => {
+                            e.preventDefault();
+                            await this.copy(props.value);
+                        }}>
+                            CopyPassWord
+                        </button>
+                    </>
+                    :
+                    <>
+                        <button onClick={() => {
+                            // Todo nullify on view change or on hide
+                            this.setState({type: "password"});
+                        }}>
+                            HidePassWord
+                        </button>
+                        <button onClick={async (e) => {
+                            e.preventDefault();
+                            await this.copy(props.value);
+                        }}>
+                            CopyPassWord
+                        </button>
+                    </>
                 }
             </div>
         )

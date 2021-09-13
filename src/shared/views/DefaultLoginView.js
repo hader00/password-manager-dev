@@ -29,7 +29,8 @@ class DefaultLoginView extends DefaultLoginViewController {
 
                     <button id="submit-button" type="submit">Login</button>
                     <label>
-                        <input type="checkbox" name="saveEmail" onClick={this.onChangeCheckBox} checked={this.state.saveEmail}/> Remember email
+                        <input type="checkbox" name="saveEmail" onClick={this.onChangeCheckBox}
+                               checked={this.state.saveEmail}/> Remember email
                     </label>
                     <div className="container-flex">
                         <button className="create-account-btn" id="create-account-button" type="button"

@@ -68,30 +68,30 @@ process.once('loaded', () => {
             });
         },
 
-        async addPassword(Title, Description, Url, Username, Password) {
+        async addPassword(title, description, url, username, password) {
             return new Promise((resolve) => {
                 ipcRenderer.once('passwords:addResponse', (_, arg) => {
                     resolve(arg);
                 });
-                ipcRenderer.send('passwords:add', Title, Description, Url, Username, Password);
+                ipcRenderer.send('passwords:add', title, description, url, username, password);
             });
         },
 
-        async updatePassword(Id, Title, Description, Url, Username, Password) {
+        async updatePassword(id, title, description, url, username, password) {
             return new Promise((resolve) => {
                 ipcRenderer.once('passwords:updateResponse', (_, arg) => {
                     resolve(arg);
                 });
-                ipcRenderer.send('passwords:update', Id, Title, Description, Url, Username, Password);
+                ipcRenderer.send('passwords:update', id, title, description, url, username, password);
             });
         },
 
-        async deletePassword(Id) {
+        async deletePassword(id) {
             return new Promise((resolve) => {
                 ipcRenderer.once('passwords:deleteResponse', (_, arg) => {
                     resolve(arg);
                 });
-                ipcRenderer.send('passwords:delete', Id);
+                ipcRenderer.send('passwords:delete', id);
             });
         },
 
