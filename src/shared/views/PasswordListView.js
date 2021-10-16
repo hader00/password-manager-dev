@@ -1,41 +1,46 @@
-import React from 'react';
+import React, {Component} from 'react';
 import Header from "../components/Header";
 import PasswordItem from "../components/PasswordItem";
 import PropTypes from "prop-types";
-import {PasswordListViewController} from "../../ViewController";
 import ViewType from "../other/ViewType";
+import {AccountCircle, Add} from "@material-ui/icons";
+import SearchIcon from '@material-ui/icons/Search';
+import {AppBar, Box, Button, IconButton, InputBase, TextField, Toolbar, Typography} from "@material-ui/core";
 
-export class PasswordListView extends PasswordListViewController {
+export class PasswordListView extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
             message: 'SELECT * FROM Passwords',
             searchInput: '',
-            response: null,
             activePasswordID: 0,
             inputReadOnly: false,
             addingNewItem: false,
-            passwords: [],
-            filteredPasswords: [],
+
         }
     }
 
     componentDidMount() {
-        console.log('mounting')
-        this.fetchAllPPasswords();
+        this.props.fetchAllPasswords();
     }
 
-    searchItems = (searchValue) => {
-        this.setState({searchInput: searchValue});
+    componentDidUpdate(prevProps, prevState, _) {
+        if (prevState.searchInput !== this.state.searchInput) {
+            this.searchItems(this.state.searchInput);
+        }
+    }
+
+
+    searchItems = () => {
         if (this.state.searchInput !== '') {
-            const filteredData = this.state.passwords.filter((item) => {
+            const filteredData = this.props.passwords.filter((item) => {
                 // Todo exclude password from values
-                return Object.values(item).join('').toLowerCase().includes(this.state.searchInput.toLowerCase())
+                return Object.values(item).join('').toLowerCase().includes(this.state.searchInput?.toLowerCase())
             })
-            this.setState({filteredPasswords: filteredData});
+            this.props.setFilteredPasswords(filteredData)
         } else {
-            this.setState({filteredPasswords: this.state.passwords});
+            this.props.setFilteredPasswords(this.state.passwords)
         }
     }
 
@@ -50,7 +55,7 @@ export class PasswordListView extends PasswordListViewController {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
             this.props.setPasswordItem(
                 {
-                    password: this.state.passwords.length >= 1 ? this.state.passwords.filter(pass => pass.id === this.state.activePasswordID)[0] : [],
+                    password: this.props.passwords.length >= 1 ? this.props.passwords.filter(pass => pass.id === this.state.activePasswordID)[0] : [],
                     parentPasswordView: this.handlePasswordView,
                     inputReadOnly: this.state.inputReadOnly,
                     addingNewItem: this.state.addingNewItem
@@ -60,14 +65,25 @@ export class PasswordListView extends PasswordListViewController {
         } else {
             return (
                 <div className="container">
-                    <Header buttonText="+" hStyle="input" buttonFunc={() => {
-                        this.setState({addingNewItem: true})
-                    }} onChange={(e) => this.searchItems(e.target.value)}/>
-                    <div>
-                        <p id="no-items"> {(this.state.passwords.size === 0) ? "No Passwords" : ""}</p>
+                    <AppBar variant="fullWidth">
+                        <Toolbar style={{justifyContent: "space-between"}}>
+                            <Button
+                                style={{marginRight: "10px", backgroundColor: "#007fff"}}
+                                color="primary" variant="contained"
+                                onClick={() => {this.setState({addingNewItem: true})}}>{<Add/>}</Button>
+                            <TextField fullWidth
+                                       style={{backgroundColor: "white", borderRadius: "10px"}}
+                                       focused={true}
+                                       value={this.state.searchInput} variant="outlined" type="text" id="search"
+                                       size="small"
+                                       placeholder="Search" onChange={(e) => {this.setState({searchInput: e.target.value})}}/>
+                        </Toolbar>
+                    </AppBar>
+                    <Box style={{paddingTop: "30px"}}>
+                        <p id="no-items"> {(this.props.passwords.size === 0) ? "No Passwords" : ""}</p>
                         <div id="passwords">
-                            {(this.state.searchInput.length > 1 && this.state.filteredPasswords.length >= 1) ? (
-                                this.state.filteredPasswords.map((password) => {
+                            {(this.state.searchInput?.length >= 1 && this.props.filteredPasswords?.length >= 1) ? (
+                                this.props.filteredPasswords?.map((password) => {
                                     return (
                                         <PasswordItem
                                             key={password.id}
@@ -77,8 +93,8 @@ export class PasswordListView extends PasswordListViewController {
                                     )
                                 })
                             ) : (
-                                this.state.passwords.length >= 1 ? (
-                                    this.state.passwords.map((password) => {
+                                this.props.passwords?.length >= 1 ? (
+                                    this.props.passwords?.map((password) => {
                                         return (
                                             <PasswordItem
                                                 key={password.id}
@@ -92,7 +108,7 @@ export class PasswordListView extends PasswordListViewController {
                                 )
                             )}
                         </div>
-                    </div>
+                    </Box>
                 </div>
             );
         }

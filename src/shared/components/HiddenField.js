@@ -1,48 +1,75 @@
 import React, {Component} from 'react'
 import PropTypes from "prop-types";
+import {Box, FormControlLabel, IconButton, Input, Switch, TextField, Tooltip} from "@material-ui/core";
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 
 export class HiddenField extends Component {
-    render() {
-        return (
-            <div>
-                <div className="switch-content">
-                    <div className="label-with-tooltip">
-                        <label className="switch-label"><b>{this.props.text}</b></label>
-                        <label className="label-with-tooltip-question-mark" data-toggle='tooltip'
-                               title={this.props.helpDescription}>?</label>
-                    </div>
-                    <label className="switch">
-                        <input type="checkbox" id="toggle-id" onChange={this.toggleServerInput}/>
-                        <span className="slider round"/>
-                    </label>
-                </div>
-                <input type={this.props.type} placeholder={this.props.placeholder} name={this.props.name}
-                       style={{display: "none"}}
-                       id="hiddenField"/>
-                <p>{this.props.location}</p>
-            </div>
-        )
-    }
-
-    toggleServerInput = () => {
-        let field = document.getElementById("hiddenField");
-        if (field.style.display === "block") {
-            field.style.display = "none";
-        } else {
-            field.style.display = "block";
+    constructor(props) {
+        super(props);
+        this.state = {
+            fileChosen: false,
+            hiddenField: (this.props.toggle === undefined ? true : this.props.toggle)
         }
     }
 
-    componentDidMount() {
+    render() {
+        return (
+            <Box style={{display: "block"}}>
+                <Box style={{display: "flex"}}>
+                    <FormControlLabel
+                        checked={!this.state.hiddenField}
+                        value="start"
+                        onChange={this.toggle}
+                        control={<Switch color="primary"/>}
+                        label={
+                            <Box style={{display: "flex", color: "dimgray"}}>
+                                <p>{this.props.text}</p>
+                                <Tooltip title={this.props.helpDescription}>
+                                    <IconButton aria-label="questionMark">
+                                        <HelpOutlineIcon/>
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        }
+                        labelPlacement="end"
+                    />
+
+                </Box>
+                <Box hidden={this.state.hiddenField} style={{paddingBottom: "10px"}}>
+                    {this.props.type === "file" ?
+                        <Input variant="filled" id="hiddenField" type={this.props.type} label={this.props.placeholder}
+                               name={this.props.name}/>
+                        :
+                        <TextField id="hiddenField" type={this.props.type}
+                                   value={this.props.value}
+                                   onKeyDown={this.props.onKeyDown}
+                                   onChange={(e) => {
+                                       if ((e.target.value?.length > 0)) {
+                                           this.toggle();
+                                       }
+                                       this.props.onChange(e)}
+                                   }
+                                   defaultValue={this.props.defaultValue?.length > 0 ? this.props.defaultValue : ""}
+                                   style={{display: "flex"}}
+                                   label={this.props.placeholder} name={this.props.name}
+                                   error={this.props.error}
+                                   helperText={this.props.helperText}
+                        />
+                    }
+                </Box>
+            </Box>
+        )
     }
 
+    toggle = () => {
+        this.setState({hiddenField: !this.state.hiddenField})
+    }
 }
 
 
 HiddenField.propTypes = {
     text: PropTypes.string.isRequired,
-    helpDescription: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     placeholder: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired

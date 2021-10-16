@@ -1,6 +1,6 @@
 process.once('loaded', () => {
     const electron = require('electron')
-    const {contextBridge, ipcRenderer, shell} = electron;
+    const {contextBridge, ipcRenderer} = electron;
 
     contextBridge.exposeInMainWorld('electron', {
         on(eventName, callback) {
@@ -131,12 +131,30 @@ process.once('loaded', () => {
             });
         },
 
+        async checkServerAvailability(server) {
+            return new Promise((resolve) => {
+                ipcRenderer.once('server:response', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('server:check', server);
+            });
+        },
+
         async getEmail() {
             return await new Promise((resolve) => {
                 ipcRenderer.once('email:response', (_, arg) => {
                     resolve(arg);
                 });
                 ipcRenderer.send('email:get');
+            });
+        },
+
+        async getServer() {
+            return await new Promise((resolve) => {
+                ipcRenderer.once('server:getResponse', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('server:get');
             });
         },
 
@@ -151,7 +169,13 @@ process.once('loaded', () => {
         },
 
         async shellOpenExternal(url) {
-            await shell.openExternal(url)
+            console.log("sending")
+            return new Promise((resolve) => {
+                ipcRenderer.once('browser:response', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('browser:open', url);
+            });
         },
     })
 })

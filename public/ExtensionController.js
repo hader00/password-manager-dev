@@ -61,6 +61,14 @@ class ExtensionController {
                         const email = await that.controller.getEmail();
                         response = {channel: 'email:response', email: email};
                         break;
+                    case "server:check":
+                        const serverCheck = await that.controller.isServerValid(message.server);
+                        response = {channel: 'server:response', serverCheck: serverCheck};
+                        break;
+                    case "server:get":
+                        const storedServer = await that.controller.getStoredServer()
+                        response = {channel: 'server:getResponse', storedServer: storedServer}
+                        break;
                     case "remoteRegistration:register":
                         const remoteRegistrationSuccess = that.controller.remoteRegistration(message.server, message.email, message.password, message.confirmationPassword, message.firstName, message.lastName);
                         response = {
@@ -89,8 +97,9 @@ class ExtensionController {
                         // todo needs to be handled other way by saving previous user state (custom location etc)
                         const dbExists = that.controller.dbExists();
                         response = {channel: 'db:response', dbExists: dbExists};
+                        break;
                     default:
-                    // code block
+                        break;
                 }
                 console.log(response)
                 that.sockets.forEach(s => s.send(JSON.stringify(response)));

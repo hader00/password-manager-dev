@@ -42,3 +42,9 @@ Distribute project for current os
 ## Update
 
 For dependencies update visit: https://www.geeksforgeeks.org/how-to-update-dependency-in-package-json-file/
+
+## Isues
+
+# After updating electron I'm getting an error
+
+You need to use `electron-rebuild -f` to rebuild packages for electron

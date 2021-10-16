@@ -57,7 +57,7 @@ class DatabaseCrypto {
     }
 
     static async decryptDatabase(filePath, password) {
-        return await new Promise((resolve, reject) => {
+        return await new Promise((resolve, _) => {
             // Input file
             const inputStream = fs.createReadStream(filePath + ENCRYPTED_EXTENSION, {start: 16});
             // Read iv

@@ -1,6 +1,5 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron')
+const {dialog} = require('electron')
 const path = require('path');
-const isDev = require('electron-is-dev');
 const {DatabaseCrypto} = require("./DatabaseCrypto");
 const {DATABASE_FILENAME} = require("./Util");
 const {DEFAULT_LOCAL_DB_LOCATION} = require("./Util");
@@ -9,7 +8,6 @@ const {VIEW_TYPE} = require("./Util");
 const {ElectronStore} = require("./ElectronStore");
 const {DatabaseConnector} = require("./DatabaseConnector");
 const {DBModeEnum} = require("./Util");
-const url = require('url');
 const {PasswordGenerator} = require("./PasswordGenerator");
 const axios = require('axios');
 
@@ -21,6 +19,7 @@ class Controller {
         this.databaseConnector = new DatabaseConnector();
         this.isFirstLogin = false;
         this.loginMode = null;
+        this.server = null;
         this.userID = null;
         this.customDatabaseLocation = null;
 
@@ -67,11 +66,13 @@ class Controller {
     async remoteLogin(server, email, password, saveEmail) {
         let remoteLoginSuccess;
         let that = this;
-        remoteLoginSuccess = axios.post(`http://${this.getServer(server)}/api/password-manager/user-login`, {
+
+        remoteLoginSuccess = axios.post(`${this.getServer(server)}/api/password-manager/user-login`, {
             email: email,
             password: DatabaseCrypto.getHMAC(password)
         })
             .then(function (response) {
+                console.log("response:", response)
                 if (response?.data?.success === true) {
                     that.userID = response.data.id;
                     that.loginMode = DBModeEnum.remote;
@@ -80,6 +81,7 @@ class Controller {
                 return false;
             })
             .catch(function (error) {
+                console.log("error:", error.data)
                 console.log(error.data);
                 return false;
             });
@@ -95,7 +97,8 @@ class Controller {
             return false;
         }
         let that = this;
-        return axios.post(`http://${this.getServer(server)}/api/password-manager/user-create`, {
+        return axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
+
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -117,7 +120,10 @@ class Controller {
 
     async addPassword(title, description, url, username, password) {
         let addSuccess;
-        password = DatabaseCrypto.encrypt(password);
+        console.log(password)
+        if (password !== "" && password !== null && password !== undefined && password !== "undefined") {
+            password = DatabaseCrypto.encrypt(password);
+        }
         if (this.databaseConnector.existsDatabase() && this.databaseConnector.getMode() === this.loginMode && this.loginMode === DBModeEnum.local) {
             let msg = `INSERT INTO Passwords (title, description, url, username, password)` +
                 `VALUES ('${title}', '${description}', '${url}', ` +
@@ -129,7 +135,7 @@ class Controller {
                     return result.response
                 });
         } else {
-            addSuccess = await axios.post(`http://${this.getServer("")}/api/password-manager/password-create`, {
+            addSuccess = await axios.post(`${this.getServer("")}/api/password-manager/password-create`, {
                 title: title,
                 description: description,
                 url: url,
@@ -168,7 +174,7 @@ class Controller {
                     return result.response
                 });
         } else {
-            updateSuccess = await axios.post(`http://${this.getServer("")}/api/password-manager/password-update`, {
+            updateSuccess = await axios.post(`${this.getServer("")}/api/password-manager/password-update`, {
                 id: id,
                 title: title,
                 description: description,
@@ -200,7 +206,7 @@ class Controller {
                     return result.response
                 });
         } else {
-            deleteSuccess = await axios.post(`http://${this.getServer("")}/api/password-manager/password-delete`, {
+            deleteSuccess = await axios.post(`${this.getServer("")}/api/password-manager/password-delete`, {
                 id: id,
                 userID: this.userID,
             })
@@ -229,8 +235,7 @@ class Controller {
                     }
                 });
         } else {
-            // msg = ["SELECT * FROM Passwords WHERE (UserID=?)", [this.userID]];
-            fetchedPasswords = await axios.post(`http://${this.getServer("")}/api/password-manager/password-fetch`, {
+            fetchedPasswords = await axios.post(`${this.getServer("")}/api/password-manager/password-fetch`, {
                 userID: this.userID,
             })
                 .then(function (response) {
@@ -295,10 +300,29 @@ class Controller {
 
     getServer(server) {
         if (isEmpty(server)) {
-            server = "localhost:6868";
+            server = "https://password-manager-mysql.herokuapp.com";
         }
         //todo check server validity (with api)
         return server
+    }
+
+    async isServerValid(server) {
+        console.log("server", server)
+        return await axios.get(`${this.getServer(server)}/available`
+            ).then((res) => {
+            console.log(res);
+            if (res.data.success) {
+                this.server = server
+                // Save server if not saved before
+                if (!this.electronStore.has("storedServer")) {
+                    this.electronStore.set("storedServer", server)
+                }
+                return true
+            }
+            return false
+        }).catch((err) => {
+            return false
+        })
     }
 
     async getEmail() {
@@ -307,6 +331,14 @@ class Controller {
             email = await this.electronStore.get("storedEmail");
         }
         return email;
+    }
+
+    async getStoredServer() {
+        let server = ""
+        if (this.electronStore.has("storedServer")) {
+            server = await this.electronStore.get("storedServer");
+        }
+        return server
     }
 
     getLoginMode() {

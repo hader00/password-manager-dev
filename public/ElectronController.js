@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, Menu, ipcMain, shell} = require('electron')
 const windowStateKeeper = require('electron-window-state')
 const path = require('path');
 const isDev = require('electron-is-dev');
@@ -26,6 +26,104 @@ class ElectronController {
                 // Some APIs can only be used after this event occurs.
                 app.on('ready', async () => {
                     await this.createWindow();
+                    // Menu template
+                    const template = [
+                        {
+                            label: 'Items',
+                            submenu: [
+                                {
+                                    label: 'New Password',
+                                    click: () => {
+                                    },
+                                    accelerator: 'CmdOrCtrl+N'
+                                },
+                                {
+                                    label: 'Save Item',
+                                    accelerator: 'CmdOrCtrl+S',
+                                    click: () => {
+                                    },
+                                },
+                                {
+                                    label: 'Delete Item',
+                                    accelerator: 'CmdOrCtrl+Backspace',
+                                    click: () => {
+                                    },
+                                },
+                                {
+                                    label: 'Open in Browser',
+                                    accelerator: 'CmdOrCtrl+Shift+O',
+                                    click: () => {
+                                    },
+                                },
+                                {type: 'separator'},
+                                {
+                                    label: 'Export Passwords',
+                                    click: () => {
+                                    },
+                                },
+                            ]
+                        },
+                        {
+                            role: 'editMenu'
+                        },
+                        {
+                            role: 'windowMenu'
+                        },
+                        {
+                            label: 'User',
+                            submenu: [
+                                {
+                                    label: 'Account settings',
+                                    click: () => {
+                                    },
+                                },
+                                {type: 'separator'},
+                                {
+                                    label: 'Change Master Password',
+                                    click: () => {
+                                    },
+                                },
+                                {
+                                    label: 'Logout',
+                                    click: () => {
+                                    },
+                                },
+                            ]
+                        },
+                        {
+                            role: 'help',
+                            submenu: [
+                                {
+                                    label: 'Learn more',
+                                    click: () => {
+                                        shell.openExternal('https://github.com/')
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                    // Set Mac-specific first menu item
+                    if (process.platform === 'darwin') {
+                        template.unshift({
+                            label: app.getName(),
+                            submenu: [
+                                {role: 'about'},
+                                {type: 'separator'},
+                                {role: 'services'},
+                                {type: 'separator'},
+                                {role: 'hide'},
+                                {role: 'hideothers'},
+                                {role: 'unhide'},
+                                {type: 'separator'},
+                                {role: 'quit'}
+                            ]
+                        })
+                    }
+                    // Build menu
+                    const menu = Menu.buildFromTemplate(template)
+                    // Set as main app menu
+                    Menu.setApplicationMenu(menu)
+
                     resolve();
                 });
                 // Quit when all windows are closed, except on macOS. There, it's common
@@ -62,6 +160,16 @@ class ElectronController {
                     const email = await this.controller.getEmail()
                     console.log("savedEmail => ", email)
                     e.sender.send('email:response', {email: email});
+                });
+                ipcMain.on('server:check', async (e, server) => {
+                    const serverCheck = await this.controller.isServerValid(server)
+                    console.log("serverCheck => ", serverCheck)
+                    e.sender.send('server:response', {serverCheck: serverCheck});
+                });
+                ipcMain.on('server:get', async (e) => {
+                    const storedServer = await this.controller.getStoredServer()
+                    console.log("storedServer => ", storedServer)
+                    e.sender.send('server:getResponse', {server: storedServer});
                 });
                 // decrypt
                 ipcMain.on('password:decrypt', async (e, password) => {
@@ -151,6 +259,14 @@ class ElectronController {
                     console.log("dbExists => ", dbExists)
                     e.sender.send('db:response', {dbExists: dbExists});
                 });
+
+                ipcMain.on("browser:open", (e, url) => {
+                    console.log("opening")
+                    shell.openExternal(url).then((r) => {
+                        console.log(r)
+                        e.sender.send('browser:response');
+                    })
+                })
             } catch (e) {
                 reject(e);
             }
@@ -169,13 +285,13 @@ class ElectronController {
             minWidth: 350, maxWidth: 350, minHeight: 300, maxHeight: 700,
             webPreferences: {
                 nodeIntegration: false,
+                enableRemoteModule: false,
                 contextIsolation: true,
                 backgroundThrottling: false,
                 devTools: isDev,
                 sandbox: true,
                 webSecurity: true,
                 allowRunningInsecureContent: false,
-                enableRemoteModule: false,
                 preload: path.join(__dirname, "./preload.js")
             }
         })

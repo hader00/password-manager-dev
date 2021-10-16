@@ -20,8 +20,12 @@ class LocalLoginViewController extends Component {
             if (result.localLoginSuccess === true) {
                 this.handleViewChange(ViewType.passwordListView);
             } else {
-                // todo warning
-                console.log("Login unsuccessful");
+                this.setState({loading: false});
+                this.setState({passwordError: true});
+                this.setState({password: ""})
+                this.setState({passwordHelperText: "Login failed, please try again."});
+                this.setState({passwordError: true});
+                this.setState({passwordHelperText: "Login failed, please try again."});
             }
         });
     }
@@ -55,6 +59,14 @@ class LocalRegistrationViewController extends Component {
 
 class DefaultLoginViewController extends Component {
     //
+    openSnackbar = () => {
+        this.setState({snackbarOpen: true})
+    }
+    //
+    checkServerAvailability = async (server) => {
+        return await window.electron.checkServerAvailability(server)
+    }
+    //
     dbExists = () => {
         window.electron.dbExists().then((result) => {
             if (result.dbExists === true) {
@@ -69,6 +81,9 @@ class DefaultLoginViewController extends Component {
         window.electron.submitLogin(userServer, userEmail, userPassword, saveEmail).then((result) => {
             if (result.remoteLoginSuccess === true) {
                 this.popAndChangeView(ViewType.passwordListView);
+            } else {
+                this.setState({loading: false});
+                this.openSnackbar();
             }
         })
     }
@@ -82,6 +97,14 @@ class DefaultLoginViewController extends Component {
             if (result.email !== "") {
                 this.setState({email: result.email})
                 this.setState({saveEmail: true})
+            }
+        })
+    }
+
+    getServer = () => {
+        window.electron.getServer().then((result) => {
+            if (result.server !== "") {
+                this.setState({server: result.server})
             }
         })
     }
@@ -112,68 +135,75 @@ class PasswordItemViewController extends Component {
     }
     //
     addPassword = () => {
-        let title = this.state.title;
-        let description = this.state.description;
-        let url = this.state.url;
-        let username = this.state.username;
-        let password = this.state.password;
-        window.electron.addPassword(title, description, url, username, password).then((result) => {
-            if (result.addSuccess === true) {
-                console.log(result)
-                this.popView();
-            } else {
-                console.log("fail")
-                console.log(result)
+        if (!this.state.saveLoading) {
+            if (!this.state.title?.length > 0) {
+                this.toggleTitleError();
+                return;
             }
-        });
+            let title = this.state.title;
+            let description = this.state.description;
+            let url = this.state.url;
+            let username = this.state.username;
+            let password = this.state.password;
+            this.setState({saveLoading: true});
+            window.electron.addPassword(title, description, url, username, password).then((result) => {
+                if (result.addSuccess === true) {
+                    console.log(result)
+                    this.popView();
+                } else {
+                    console.log(result)
+                }
+            });
+        }
     }
     //
     updatePassword = () => {
-        console.log("updating")
-        let id = this.state.id;
-        let title = this.state.title;
-        let description = this.state.description;
-        let url = this.state.url;
-        let username = this.state.username;
-        let password = this.state.password;
-        window.electron.updatePassword(id, title, description, url, username, password).then((result) => {
-            if (result.updateSuccess === true) {
-                console.log(result)
-                this.popView();
-            } else {
-                console.log("fail")
-                console.log(result)
-            }
-        });
+        if (!this.state.updateLoading) {
+            let id = this.state.id;
+            let title = this.state.title;
+            let description = this.state.description;
+            let url = this.state.url;
+            let username = this.state.username;
+            let password = this.state.password;
+            this.setState({updateLoading: true});
+            window.electron.updatePassword(id, title, description, url, username, password).then((result) => {
+                if (result.updateSuccess === true) {
+                    console.log(result)
+                    this.popView();
+                } else {
+                    console.log(result)
+                }
+            });
+        }
     }
     //
     deletePassword = () => {
-        let id = this.state.id;
-        window.electron.deletePassword(id).then((result) => {
-            console.log("deleting")
-            if (result.deleteSuccess === true) {
-                console.log(result)
-                this.popView();
-            } else {
-                console.log("fail")
-                console.log(result)
-            }
-        });
-    }
-}
-
-class PasswordListViewController extends Component {
-    fetchAllPPasswords = () => {
-        console.log("Fetching all passwords");
-        window.electron.fetchAllPPasswords().then((result) => {
-            console.log(result);
-            this.setState({response: result.response});
-            this.setState({passwords: result.response});
-        });
+        if (!this.state.deleteLoading) {
+            let id = this.state.id;
+            this.setState({deleteLoading: true});
+            window.electron.deletePassword(id).then((result) => {
+                console.log("deleting")
+                if (result.deleteSuccess === true) {
+                    console.log(result)
+                    this.popView();
+                } else {
+                    console.log("fail")
+                    console.log(result)
+                }
+            });
+        }
     }
 }
 
 class RegistrationViewController extends Component {
+    //
+    openSnackbar = () => {
+        this.setState({snackbarOpen: true})
+    }
+    //
+    checkServerAvailability = async (server) => {
+        return await window.electron.checkServerAvailability(server)
+    }
     //
     handleViewChange = (view) => {
         this.props.changeParentsActiveView(view);
@@ -186,7 +216,8 @@ class RegistrationViewController extends Component {
             if (result.remoteRegistrationSuccess === true) {
                 this.handleViewChange(ViewType.passwordListView);
             } else {
-                // todo ui warning
+                this.setState({loading: false});
+                this.openSnackbar();
             }
         })
     }
@@ -197,6 +228,5 @@ export {
     LocalRegistrationViewController,
     DefaultLoginViewController,
     PasswordItemViewController,
-    PasswordListViewController,
     RegistrationViewController
 }

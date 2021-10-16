@@ -67,7 +67,7 @@ class DatabaseConnector {
     }
 
     async sendMessage(msg) {
-        return await new Promise((resolve, reject) => {
+        return await new Promise((resolve, _) => {
             this.database.all(msg, (err, result) => {
                 if (err) {
                     resolve({response: false, err: err});
