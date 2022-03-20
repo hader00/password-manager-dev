@@ -41,14 +41,14 @@ class LocalRegistrationViewController extends Component {
         })
     }
     //
-    changeParentsActiveView = (newActiveView) => {
-        this.props.changeParentsActiveView(newActiveView);
+    handleViewChange = (location) => {
+        this.props.changeParentsActiveView(location);
     }
     //
     submitRegistration = (password, location) => {
         window.electron.localRegistration(password, location).then((result) => {
             if (result.localRegistrationSuccess === true) {
-                this.changeParentsActiveView(ViewType.passwordListView);
+                this.props.changeParentsActiveView(ViewType.passwordListView);
             } else {
                 // todo warning
                 console.log("Registration NOT successful");
@@ -103,9 +103,7 @@ class DefaultLoginViewController extends Component {
 
     getServer = () => {
         window.electron.getServer().then((result) => {
-            if (result.server !== "") {
-                this.setState({server: result.server})
-            }
+            this.setState({server: result.server})
         })
     }
 }

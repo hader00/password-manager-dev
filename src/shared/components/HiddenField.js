@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import PropTypes from "prop-types";
-import {Box, FormControlLabel, IconButton, Input, Switch, TextField, Tooltip} from "@material-ui/core";
+import {Box, Button, FormControlLabel, IconButton, Input, Switch, TextField, Tooltip} from "@material-ui/core";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 
@@ -9,7 +9,7 @@ export class HiddenField extends Component {
         super(props);
         this.state = {
             fileChosen: false,
-            hiddenField: (this.props.toggle === undefined ? true : this.props.toggle)
+            hiddenField: (this.props.toggle)
         }
     }
 
@@ -18,7 +18,7 @@ export class HiddenField extends Component {
             <Box style={{display: "block"}}>
                 <Box style={{display: "flex"}}>
                     <FormControlLabel
-                        checked={!this.state.hiddenField}
+                        checked={this.state.hiddenField}
                         value="start"
                         onChange={this.toggle}
                         control={<Switch color="primary"/>}
@@ -36,17 +36,24 @@ export class HiddenField extends Component {
                     />
 
                 </Box>
-                <Box hidden={this.state.hiddenField} style={{paddingBottom: "10px"}}>
+                <Box hidden={!this.state.hiddenField} style={{paddingBottom: "10px"}}>
                     {this.props.type === "file" ?
-                        <Input variant="filled" id="hiddenField" type={this.props.type} label={this.props.placeholder}
-                               name={this.props.name}/>
+                        <div>
+                         <Button  variant="contained"
+                                  component="label"
+                         >
+                             {this.props.location === "" ? "Select Folder" : "Change"}
+                            <input id="hiddenField" type="file" name={this.props.name} hidden/>
+                         </Button>
+                            <label style={{color: "gray", paddingLeft:"10px"}}>{this.props.location}</label>
+                        </div>
                         :
                         <TextField id="hiddenField" type={this.props.type}
                                    value={this.props.value}
                                    onKeyDown={this.props.onKeyDown}
                                    onChange={(e) => {
                                        if ((e.target.value?.length > 0)) {
-                                           this.toggle();
+                                           this.setState({hiddenField: true})
                                        }
                                        this.props.onChange(e)}
                                    }
@@ -64,6 +71,9 @@ export class HiddenField extends Component {
 
     toggle = () => {
         this.setState({hiddenField: !this.state.hiddenField})
+    }
+    componentDidMount() {
+        console.log("this.props.toggle", this.props.toggle)
     }
 }
 

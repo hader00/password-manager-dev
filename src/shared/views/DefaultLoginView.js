@@ -3,12 +3,24 @@ import HiddenField from "../components/HiddenField";
 import ViewType from "../other/ViewType";
 import PropTypes from "prop-types";
 import {DefaultLoginViewController} from "../../ViewController";
-import {Box, Button, ButtonGroup, CircularProgress, Divider, FormControl, Snackbar, TextField} from "@material-ui/core";
+import {
+    AppBar,
+    Box,
+    Button,
+    ButtonGroup,
+    CircularProgress,
+    Divider,
+    FormControl,
+    Snackbar,
+    TextField,
+    Toolbar, Typography
+} from "@material-ui/core";
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import Alert from '@material-ui/lab/Alert';
 import Header from "../components/Header";
 import {Help} from "@material-ui/icons";
 import validator from "validator";
+import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 
 class DefaultLoginView extends DefaultLoginViewController {
     constructor(props) {
@@ -32,7 +44,12 @@ class DefaultLoginView extends DefaultLoginViewController {
     render() {
         return (
             <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
-                <FormControl style={{display: "flex"}} onSubmit={this.submitLogin}>
+                <AppBar variant="fullWidth">
+                    <Toolbar style={{display: "flex", justifyContent: "center"}}>
+                        <Typography style={{fontWeight: "bold"}} variant="h5">Password Manager</Typography>
+                    </Toolbar>
+                </AppBar>
+                <FormControl style={{paddingTop: "60px", display: "flex"}} onSubmit={this.submitLogin}>
                     <TextField type="email" label="Enter Email" id="email" name="email" onChange={this.onChange}
                                value={this.state.email} required error={this.state.emailError} helperText={this.state.emailHelperText}/>
                     <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
@@ -57,9 +74,10 @@ class DefaultLoginView extends DefaultLoginViewController {
                         name={"server"}
                         helperText={this.state.serverHelperText}
                         error={this.state.serverError}
-                        toggle={(!(this.state.server === "" || this.state.server === undefined))}
+                        toggle={this.state.server !== ""}
                         value={this.state.server} onChange={this.onChange} onKeyDown={async (e) => {
                         await this.onEnterPress(e)
+                        console.log(this.state.server)
                     }}
                         helpDescription={"For enterprise login"} icon={<Help/>}/>
                     <Button variant="contained" style={{marginBottom: "20px"}} id="submit" type="submit"

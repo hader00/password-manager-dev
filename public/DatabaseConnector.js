@@ -1,18 +1,16 @@
 const sqlite3 = require('sqlite3');
 const fs = require('fs');
 const {DatabaseCrypto} = require("./DatabaseCrypto");
-const {DBModeEnum, ENCRYPTED_EXTENSION} = require("./Util");
+const {ENCRYPTED_EXTENSION} = require("./Util");
 
 class DatabaseConnector {
     constructor() {
-        this.mode = null;
         this.location = null;
         this.userPassword = null;
         this.database = null;
     }
 
-    async openDatabase(mode, location, userPassword) {
-        this.mode = mode;
+    async openDatabase(location, userPassword) {
         this.location = location;
         this.userPassword = userPassword;
 
@@ -39,12 +37,8 @@ class DatabaseConnector {
         DatabaseCrypto.encryptDatabase(this.location, this.userPassword);
     }
 
-    createDatabase(location, userPassword) {
-        this.mode = DBModeEnum.local // We don't need to create DB for remote login
+    createDatabase(location) {
         this.location = location;
-        this.userPassword = userPassword;
-
-
         this.database = new sqlite3.Database(location, (err) => {
             console.log("location =>", location)
             if (err) console.error('Database opening error: ', err);
@@ -53,11 +47,7 @@ class DatabaseConnector {
         const sql =
             `CREATE TABLE Passwords(
                 id INTEGER PRIMARY KEY,
-                title TEXT NOT NULL,
-                description TEXT,
-                url TEXT,
-                username TEXT NOT NULL,
-                password TEXT NOT NULL
+                item TEXT NOT NULL
             );`;
         this.database.all(sql, (err, rows) => {
             console.log(rows);
@@ -81,11 +71,6 @@ class DatabaseConnector {
     existsDatabase() {
         return this.database !== null;
     }
-
-    getMode() {
-        return this.mode
-    }
-
 
 }
 

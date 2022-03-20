@@ -29,15 +29,16 @@
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
-    "axios": "^0.21.4",
+    "axios": "^0.24.0",
     "crypto-js": "^4.1.1",
     "electron-cookies": "^1.1.0",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.0.1",
     "electron-window-state": "^5.0.3",
-    "sqlite3": "^4.2.0",
-    "validator": "^13.6.0",
-    "ws": "^8.2.2"
+    "js-crypto-hkdf": "^1.0.4",
+    "sqlite3": "^5.0.2",
+    "validator": "^13.7.0",
+    "ws": "^8.3.0"
   },
   "scripts": {
     "start": "concurrently \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\"",
@@ -51,11 +52,12 @@
     "rebuild-electron": "electron-builder install-app-deps"
   },
   "devDependencies": {
-    "concurrently": "^6.2.2",
+    "concurrently": "^6.4.0",
     "cross-env": "^7.0.3",
-    "electron": "^15.0.0",
-    "electron-builder": "^22.11.7",
-    "electron-rebuild": "^3.2.3",
+    "electron": "^16.0.2",
+    "electron-builder": "^22.14.5",
+    "electron-rebuild": "^3.2.5",
+    "node-gyp": "^8.4.1",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

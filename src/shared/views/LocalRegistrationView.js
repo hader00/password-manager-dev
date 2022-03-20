@@ -4,33 +4,51 @@ import ViewType from "../other/ViewType"
 import PropTypes from "prop-types";
 import HiddenField from "../components/HiddenField";
 import {LocalRegistrationViewController} from "../../ViewController";
-import {Box, Button, FormControl, TextField} from "@material-ui/core";
+import {AppBar, Box, Button, FormControl, TextField, Toolbar, Typography} from "@material-ui/core";
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 
 
 class LocalRegistrationView extends LocalRegistrationViewController {
     constructor(props) {
         super(props);
         this.state = {
-            location: ""
+            location: "",
+            passwordType: "password"
         }
     }
 
     render() {
         return (
-            <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
                 <FormControl id="submit-form" onSubmit={this.submitLocalRegistrationLogin}>
-                    <Header hStyle="back" buttonText="Back"
-                            buttonFunc={() => this.changeParentsActiveView(ViewType.defaultLoginView)}/>
-                    <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
+                    <AppBar variant="fullWidth">
+                        <Toolbar style={{justifyContent: "space-between"}}>
+                            <div style={{left:"0", display: "flex", alignItems: "center"}}>
+                                <Button
+                                    style={{marginRight: "10px", backgroundColor: "#007fff"}}
+                                    startIcon={<ArrowBackIosIcon/>}
+                                    color="primary" variant="contained"
+                                    onClick={() => this.handleViewChange(ViewType.defaultLoginView)}>Back</Button>
+                                <Typography style={{fontWeight: "bold"}} variant="h5">Local Registration</Typography>
+                            </div>
+                        </Toolbar>
+                    </AppBar>
+
+                    <Box style={{paddingTop: "60px"}}>
                         <div style={{display: "flex", margin: 0}}>
-                            <TextField style={{width: "70vw"}} type={this.state.passwordType} label="Enter Password"
+                            <TextField fullWidth type={this.state.passwordType} label="Enter Password"
                                        id="password" name="password" onChange={this.onChange}
                                        value={this.state.password}/>
-                            <Button
-                                variant=""
-                                onClick={this.togglePasswordType}
-                            ><VisibilityIcon/></Button>
+                            {this.state.password?.length > 0 ?
+                                <Button
+                                    variant=""
+                                    onClick={() => {
+                                        this.togglePasswordType("passwordType")
+                                    }}
+                                ><VisibilityIcon/></Button>
+                                :
+                                <></>
+                            }
                         </div>
                     </Box>
                     <HiddenField
@@ -43,7 +61,6 @@ class LocalRegistrationView extends LocalRegistrationViewController {
                         Database
                     </Button>
                 </FormControl>
-            </Box>
         );
     }
 
@@ -56,8 +73,20 @@ class LocalRegistrationView extends LocalRegistrationViewController {
         }
     }
 
+    togglePasswordType = (type) => {
+        if (this.state[type] === "password") {
+            this.setState({[type]: "text"})
+        } else {
+            this.setState({[type]: "password"})
+        }
+    }
+
     componentDidMount() {
         this.selectFolder();
+    }
+
+    onChange = (e) => {
+        this.setState({[e.target.name]: e.target.value});
     }
 }
 
