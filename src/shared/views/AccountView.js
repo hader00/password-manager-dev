@@ -4,8 +4,9 @@ import PropTypes from "prop-types";
 import {AppBar, Box, Button, Select, TextField, Toolbar, Typography} from "@material-ui/core";
 
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
+import {AccountViewController} from "../../ViewController";
 
-class AccountView extends Component {
+class AccountView extends AccountViewController {
     constructor(props) {
         super(props);
         this.state = {
@@ -116,7 +117,7 @@ class AccountView extends Component {
     }
 
     componentDidMount() {
-        this.getDefaultSecurity()
+        this.getDefaultSecurityFromElectron().then(r => {return r})
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -135,22 +136,22 @@ class AccountView extends Component {
         this.setState({[e.target.name]: e.target.value});
     };
 
-    getDefaultSecurity = () => {
-        window.electron.getDefaultSecurity().then((result) => {
-            console.log(result)
-            if (["-1", "10", "20"].indexOf(result.response.clearTimeout) !== -1) {
-                this.setState({clipboardTime: result.response.clearTimeout})
-            } else {
-                this.setState({clipboardTime: 0})
-                this.setState({customClipboardTime: parseInt(result.response.clearTimeout)})
-            }
-            if (["-1", "1", "5", "10", "20"].indexOf(result.response.logoutTimeout) !== -1) {
-                this.setState({time: result.response.logoutTimeout})
-            } else {
-                this.setState({time: 0})
-                this.setState({customTime: parseInt(result.response.logoutTimeout)})
-            }
-        })
+    getDefaultSecurityFromElectron = async () => {
+        let result = await this.getDefaultSecurity()
+        console.log(result)
+        if (["-1", "10", "20"].indexOf(result.response.clearTimeout) !== -1) {
+            this.setState({clipboardTime: result.response.clearTimeout})
+        } else {
+            this.setState({clipboardTime: 0})
+            this.setState({customClipboardTime: parseInt(result.response.clearTimeout)})
+        }
+        if (["-1", "1", "5", "10", "20"].indexOf(result.response.logoutTimeout) !== -1) {
+            this.setState({time: result.response.logoutTimeout})
+        } else {
+            this.setState({time: 0})
+            this.setState({customTime: parseInt(result.response.logoutTimeout)})
+        }
+
     }
 
     setDefaultSecurity = () => {
@@ -168,9 +169,6 @@ class AccountView extends Component {
         } else {
             timeouts['time'] = this.state.customTime
         }
-        window.electron.setDefaultSecurity(timeouts).then((result) => {
-            console.log("setDefaultSecurity", result);
-        })
     }
 }
 

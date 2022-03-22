@@ -318,18 +318,18 @@ export class PasswordItemView extends PasswordItemViewController {
                 });
             }
         }
-        this.waitForSaveItem();
-        this.waitForDeleteItem();
+        this.waitForSaveItemFromElectron();
+        this.waitForDeleteItemFromElectron();
     }
 
-    waitForSaveItem = () => {
-        window.electron.waitForSaveItem().then((result) => {
+    waitForSaveItemFromElectron = () => {
+        this.waitForSaveItem().then((result) => {
             this.savePassword();
         })
     }
 
-    waitForDeleteItem = () => {
-        window.electron.waitForDeleteItem().then((result) => {
+    waitForDeleteItemFromElectron = () => {
+        this.waitForDeleteItem().then((result) => {
             this.setState({open: true})
         })
     }

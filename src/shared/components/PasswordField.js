@@ -5,9 +5,10 @@ import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import SettingsIcon from '@material-ui/icons/Settings';
+import {PasswordFieldController} from "../../ViewController";
 
 
-export class PasswordField extends Component {
+export class PasswordField extends PasswordFieldController {
     constructor(props) {
         super(props);
         this.state = {
@@ -106,10 +107,7 @@ export class PasswordField extends Component {
 
 
     copy = async (text) => {
-        let timeout = await window.electron.getDefaultSecurity().then((result) => {
-            console.log(result?.response?.clearTimeout)
-            return parseInt(result?.response?.clearTimeout)*1000;
-        })
+        let timeout = this.getDefaultSecurity()
         if (timeout === null) {
             timeout = 10 * 1000; //10 seconds
         }

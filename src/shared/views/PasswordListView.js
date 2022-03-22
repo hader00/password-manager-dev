@@ -39,11 +39,11 @@ export class PasswordListView extends PasswordListViewController {
         this.waitForExportItems();
         this.getMode();
         this.selectFolder();
-        this.waitForAccount();
+        this.waitForAccountFromElectron();
     }
 
-    waitForAccount = () => {
-        window.electron.waitForAccount().then((result) => {
+    waitForAccountFromElectron = () => {
+        this.waitForAccount().then((result) => {
             this.props.changeParentsActiveView(ViewType.accountView)
         })
     }

@@ -193,6 +193,15 @@ class PasswordItemViewController extends Component {
             });
         }
     }
+
+    waitForSaveItem = async () => {
+        return await window.electron.waitForSaveItem()
+    }
+
+    waitForDeleteItem = async () => {
+        return await window.electron.waitForDeleteItem()
+    }
+
 }
 
 class RegistrationViewController extends Component {
@@ -235,6 +244,25 @@ class PasswordListViewController extends Component {
             })
         }
     }
+
+    waitForAccount = async () => {
+        return await window.electron.waitForAccount()
+    }
+}
+
+class PasswordFieldController extends Component {
+    getDefaultSecurity = async () => {
+        return await window.electron.getDefaultSecurity().then((result) => {
+            console.log(result?.response?.clearTimeout)
+            return parseInt(result?.response?.clearTimeout) * 1000;
+        })
+    }
+}
+
+class AccountViewController extends Component {
+    getDefaultSecurity = async () => {
+        return window.electron.getDefaultSecurity()
+    }
 }
 
 export {
@@ -243,5 +271,7 @@ export {
     DefaultLoginViewController,
     PasswordItemViewController,
     RegistrationViewController,
-    PasswordListViewController
+    PasswordListViewController,
+    PasswordFieldController,
+    AccountViewController
 }
