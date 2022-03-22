@@ -1,5 +1,4 @@
 import React from 'react';
-import Header from "../components/Header";
 import ViewType from "../other/ViewType"
 import PropTypes from "prop-types";
 import HiddenField from "../components/HiddenField";

@@ -1,23 +1,10 @@
 import React from 'react';
 import HiddenField from "../components/HiddenField";
-import Header from "../components/Header";
 import ViewType from "../other/ViewType"
 import PropTypes from "prop-types";
 import {LocalLoginViewController} from "../../ViewController";
-import {
-    AppBar,
-    Box,
-    Button,
-    CircularProgress,
-    Divider,
-    FormControl, IconButton,
-    TextField,
-    Toolbar,
-    Typography
-} from "@material-ui/core";
+import {AppBar, Box, Button, CircularProgress, FormControl, TextField, Toolbar, Typography} from "@material-ui/core";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
-import CreateIcon from "@material-ui/icons/Create";
-import {Save} from "@material-ui/icons";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 
 

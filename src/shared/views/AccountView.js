@@ -1,18 +1,7 @@
 import React, {Component} from 'react';
 import ViewType from "../other/ViewType";
 import PropTypes from "prop-types";
-import {
-    AppBar,
-    Box,
-    Button,
-    ButtonGroup,
-    CircularProgress,
-    Divider,
-    FormControl, InputLabel, Select,
-    Snackbar,
-    TextField,
-    Toolbar, Typography
-} from "@material-ui/core";
+import {AppBar, Box, Button, Select, TextField, Toolbar, Typography} from "@material-ui/core";
 
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 

@@ -1,24 +1,11 @@
-import React, {Component} from 'react';
-import Header from "../components/Header";
+import React from 'react';
 import PasswordItem from "../components/PasswordItem";
 import PropTypes from "prop-types";
 import ViewType from "../other/ViewType";
-import {AccountCircle, Add, } from "@material-ui/icons";
+import {Add,} from "@material-ui/icons";
 import ImportExportIcon from '@material-ui/icons/ImportExport';
-import SearchIcon from '@material-ui/icons/Search';
-import {
-    AppBar,
-    Box,
-    Button,
-    CircularProgress,
-    IconButton,
-    InputBase, Modal,
-    TextField,
-    Toolbar,
-    Typography
-} from "@material-ui/core";
+import {AppBar, Box, Button, CircularProgress, Modal, TextField, Toolbar, Typography} from "@material-ui/core";
 import {PasswordListViewController} from "../../ViewController";
-import DeleteIcon from "@material-ui/icons/Delete";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 
 export class PasswordListView extends PasswordListViewController {

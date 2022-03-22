@@ -1,7 +1,6 @@
 import React from 'react';
 import HiddenField from "../components/HiddenField";
 import ViewType from "../other/ViewType";
-import Header from "../components/Header";
 import PropTypes from "prop-types";
 import validator from 'validator'
 import {RegistrationViewController} from "../../ViewController";
@@ -10,8 +9,8 @@ import {
     Box,
     Button,
     CircularProgress,
-    Divider,
-    FormControl, Snackbar,
+    FormControl,
+    Snackbar,
     TextField,
     Toolbar,
     Typography

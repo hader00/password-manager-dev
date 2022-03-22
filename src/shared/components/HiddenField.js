@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import PropTypes from "prop-types";
-import {Box, Button, FormControlLabel, IconButton, Input, Switch, TextField, Tooltip} from "@material-ui/core";
+import {Box, Button, FormControlLabel, IconButton, Switch, TextField, Tooltip} from "@material-ui/core";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 

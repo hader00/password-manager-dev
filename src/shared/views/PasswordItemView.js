@@ -9,15 +9,15 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import {
     AppBar,
     Box,
-    Button, ButtonGroup,
+    Button,
     CircularProgress,
     FormControl,
-    IconButton, Modal,
+    IconButton,
+    Modal,
     TextField,
     Toolbar,
     Typography
 } from "@material-ui/core";
-import ViewType from "../other/ViewType";
 
 export class PasswordItemView extends PasswordItemViewController {
 

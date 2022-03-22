@@ -9,18 +9,16 @@ import {
     Button,
     ButtonGroup,
     CircularProgress,
-    Divider,
     FormControl,
     Snackbar,
     TextField,
-    Toolbar, Typography
+    Toolbar,
+    Typography
 } from "@material-ui/core";
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import Alert from '@material-ui/lab/Alert';
-import Header from "../components/Header";
 import {Help} from "@material-ui/icons";
 import validator from "validator";
-import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 
 class DefaultLoginView extends DefaultLoginViewController {
     constructor(props) {
