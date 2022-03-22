@@ -1,7 +1,7 @@
 {
   "name": "simple-password-manager-app",
   "productName": "Simple Password Manager",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "author": "Martin Haderka",
   "description": "Description",
@@ -19,10 +19,16 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "target": "dmg"
+      "target": "dmg",
+      "publish": ["github"]
     },
     "linux": {
-      "category": "Network"
+      "category": "Network",
+      "publish": ["github"]
+    },
+    "win": {
+      "publish": ["github"],
+      "publisherName": "Martin Haderka"
     }
   },
   "dependencies": {
@@ -55,7 +61,7 @@
     "concurrently": "^6.4.0",
     "cross-env": "^7.0.3",
     "electron": "^16.0.2",
-    "electron-builder": "^22.14.5",
+    "electron-builder": "^23.0.2",
     "electron-rebuild": "^3.2.5",
     "node-gyp": "^8.4.1",
     "prop-types": "^15.7.2",
