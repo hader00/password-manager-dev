@@ -22,7 +22,7 @@ class AccountView extends Component {
             <Box fullwidth>
                 <AppBar variant="fullWidth">
                     <Toolbar style={{justifyContent: "space-between"}}>
-                        <div style={{left:"0", display: "flex", alignItems: "center"}}>
+                        <div style={{left: "0", display: "flex", alignItems: "center"}}>
                             <Button
                                 style={{marginRight: "10px", backgroundColor: "#007fff"}}
                                 startIcon={<ArrowBackIosIcon/>}
@@ -34,75 +34,81 @@ class AccountView extends Component {
                 </AppBar>
                 <Box fullwidth style={{paddingTop: "80px"}}>
                     <Typography style={{fontWeight: "bold"}} variant="h5">Security</Typography>
-                    <div style={{display: "flex", justifyContent:"space-between"}}>
-                        <div style={{paddingTop:"5px"}}>
+                    <div style={{display: "flex", justifyContent: "space-between"}}>
+                        <div style={{paddingTop: "5px"}}>
                             <label htmlFor="time"><b>Vault Timeout:</b></label>
                         </div>
                         <div>
-                        <Select
-                            native
-                            value={this.state.time}
-                            name='time'
-                            onChange={this.onChange}
-                            inputProps={{
-                                name: 'time',
-                                id: 'time',
-                            }}
-                        >
-                            <option value={-1}>Never</option>
-                            <option value={1}>1 minute</option>
-                            <option value={5}>5 minutes</option>
-                            <option value={10}>10 minutes</option>
-                            <option value={20}>20 minutes</option>
-                            <option value={0}>Custom</option>
-                        </Select>
+                            <Select
+                                native
+                                value={this.state.time}
+                                name='time'
+                                onChange={this.onChange}
+                                inputProps={{
+                                    name: 'time',
+                                    id: 'time',
+                                }}
+                            >
+                                <option value={-1}>Never</option>
+                                <option value={1}>1 minute</option>
+                                <option value={5}>5 minutes</option>
+                                <option value={10}>10 minutes</option>
+                                <option value={20}>20 minutes</option>
+                                <option value={0}>Custom</option>
+                            </Select>
                         </div>
                     </div>
                     {this.state.time === 0 || this.state.time === "0" ?
-                        <div style={{display: "flex", justifyContent:"space-between"}}>
-                            <div style={{paddingTop:"15px",paddingLeft:"15px"}}>
+                        <div style={{display: "flex", justifyContent: "space-between"}}>
+                            <div style={{paddingTop: "15px", paddingLeft: "15px"}}>
                                 <label htmlFor="customClipboardTime">minutes:</label>
                             </div>
-                            <TextField value={this.state.customTime} id="customTime" variant="outlined" name="customTime" label="minutes" type={"number"} min={1} max={1024} onChange={this.onChange}/>
+                            <TextField value={this.state.customTime} id="customTime" variant="outlined"
+                                       name="customTime" label="minutes" type={"number"} min={1} max={1024}
+                                       onChange={this.onChange}/>
                         </div>
                         :
                         <></>
                     }
-                    <div style={{paddingTop:"20px", display: "flex", justifyContent:"space-between"}}>
-                        <div style={{paddingTop:"5px"}}>
+                    <div style={{paddingTop: "20px", display: "flex", justifyContent: "space-between"}}>
+                        <div style={{paddingTop: "5px"}}>
                             <label htmlFor="clipboardTime"><b>Clear Clipboard:</b></label>
                         </div>
                         <div>
-                        <Select
-                            native
-                            name='clipboardTime'
-                            value={this.state.clipboardTime}
-                            onChange={this.onChange}
-                            inputProps={{
-                                name: 'clipboardTime',
-                                id: 'clipboardTime',
-                            }}
-                        >
-                            <option value={-1}>Never</option>
-                            <option value={10}>10 seconds</option>
-                            <option value={20}>20 seconds</option>
-                            <option value={0}>Custom</option>
-                        </Select>
+                            <Select
+                                native
+                                name='clipboardTime'
+                                value={this.state.clipboardTime}
+                                onChange={this.onChange}
+                                inputProps={{
+                                    name: 'clipboardTime',
+                                    id: 'clipboardTime',
+                                }}
+                            >
+                                <option value={-1}>Never</option>
+                                <option value={10}>10 seconds</option>
+                                <option value={20}>20 seconds</option>
+                                <option value={0}>Custom</option>
+                            </Select>
                         </div>
                     </div>
                     {this.state.clipboardTime === 0 || this.state.clipboardTime === "0" ?
-                        <div style={{display: "flex", justifyContent:"space-between"}}>
-                            <div style={{paddingTop:"15px",paddingLeft:"15px"}}>
+                        <div style={{display: "flex", justifyContent: "space-between"}}>
+                            <div style={{paddingTop: "15px", paddingLeft: "15px"}}>
                                 <label htmlFor="customClipboardTime">seconds:</label>
                             </div>
-                            <TextField value={this.state.customClipboardTime} id="customClipboardTime" variant="outlined" name="customClipboardTime" label="seconds" min={1} max={1024} type={"number"} onChange={this.onChange}/>
+                            <TextField value={this.state.customClipboardTime} id="customClipboardTime"
+                                       variant="outlined" name="customClipboardTime" label="seconds" min={1} max={1024}
+                                       type={"number"} onChange={this.onChange}/>
                         </div>
                         :
                         <></>
                     }
                 </Box>
-                <Typography style={{paddingTop:"20px", fontWeight: "bold"}} variant="h5">Logout</Typography>
-                <Button variant="contained" color="primary" onClick={() => {this.handleViewChange(ViewType.defaultLoginView)}}>
+                <Typography style={{paddingTop: "20px", fontWeight: "bold"}} variant="h5">Logout</Typography>
+                <Button variant="contained" color="primary" onClick={() => {
+                    this.handleViewChange(ViewType.defaultLoginView)
+                }}>
                     Logout
                 </Button>
             </Box>
@@ -112,9 +118,10 @@ class AccountView extends Component {
     componentDidMount() {
         this.getDefaultSecurity()
     }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevState.time !== this.state.time || prevState.customTime !== this.state.customTime
-        || prevState.clipboardTime !== this.state.clipboardTime || prevState.customClipboardTime !== this.state.customClipboardTime) {
+            || prevState.clipboardTime !== this.state.clipboardTime || prevState.customClipboardTime !== this.state.customClipboardTime) {
             this.setDefaultSecurity();
         }
     }

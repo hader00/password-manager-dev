@@ -226,14 +226,14 @@ class RegistrationViewController extends Component {
 class PasswordListViewController extends Component {
     selectFolder = () => {
         let element = document.getElementById('hiddenField')
-            if (element !== null) {
-                element.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.electron.selectFolder().then((result) => {
-                        this.setState({location: result.selectedFolder})
-                    });
-                })
-            }
+        if (element !== null) {
+            element.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.electron.selectFolder().then((result) => {
+                    this.setState({location: result.selectedFolder})
+                });
+            })
+        }
     }
 }
 

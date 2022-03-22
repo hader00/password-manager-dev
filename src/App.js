@@ -20,6 +20,7 @@ class App extends Component {
             passwords: [],
             filteredPasswords: [],
             passwordItem: {},
+            defaultView: null
         }
     }
 
@@ -29,7 +30,7 @@ class App extends Component {
                 <Box>
                     <SwitchComponents active={this.state.activeView}>
                         <AccountView componentName={ViewType.accountView}
-                                          changeParentsActiveView={this.changeActiveView}/>
+                                     changeParentsActiveView={this.changeActiveView}/>
                         <DefaultLoginView componentName={ViewType.defaultLoginView}
                                           changeParentsActiveView={this.changeActiveView}/>
                         <LocalLoginView componentName={ViewType.localLoginView}
@@ -60,8 +61,10 @@ class App extends Component {
 
     componentDidMount() {
         window.electron.getDefaultView().then((response) => {
-            return this.setState({activeView: response.defaultView})
+            this.setState({defaultView: response.defaultView})
+            this.setState({activeView: response.defaultView})
         });
+        this.autoLogOut().then(r => {return r})
     }
 
     fetchAllPasswords = () => {
@@ -81,6 +84,22 @@ class App extends Component {
 
     setPasswordItem = (newPasswordItem) => {
         this.setState({passwordItem: newPasswordItem});
+    }
+
+    autoLogOut = async () => {
+        let timeout = await window.electron.getDefaultSecurity().then((result) => {
+            console.log(result?.response?.logoutTimeout)
+            return parseInt(result?.response?.logoutTimeout) * 60 * 1000;
+        })
+        if (timeout === null) {
+            timeout = 5 * 60 * 1000; // 5 minutes
+        }
+        if (timeout !== -1) {
+            setTimeout(() => {
+                this.setState({activeView: this.state.defaultView})
+                console.log("logging out")
+            }, timeout);
+        }
     }
 
 }

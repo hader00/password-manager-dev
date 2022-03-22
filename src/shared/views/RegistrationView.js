@@ -52,7 +52,7 @@ class RegistrationView extends RegistrationViewController {
             <FormControl style={{display: "flex"}} onSubmit={this.submitRegistration}>
                 <AppBar variant="fullWidth">
                     <Toolbar style={{justifyContent: "space-between"}}>
-                        <div style={{left:"0", display: "flex", alignItems: "center"}}>
+                        <div style={{left: "0", display: "flex", alignItems: "center"}}>
                             <Button
                                 style={{marginRight: "10px", backgroundColor: "#007fff"}}
                                 startIcon={<ArrowBackIosIcon/>}
@@ -144,7 +144,8 @@ class RegistrationView extends RegistrationViewController {
                     }
                 </Button>
                 <Snackbar open={this.state.snackbarOpen} autoHideDuration={6000} onClose={this.handleClose}>
-                    <Alert elevation={6} variant="filled" onClose={this.handleClose} severity="error">Registration failed, please check your credentials!</Alert>
+                    <Alert elevation={6} variant="filled" onClose={this.handleClose} severity="error">Registration
+                        failed, please check your credentials!</Alert>
                 </Snackbar>
             </FormControl>
         );
@@ -194,13 +195,15 @@ class RegistrationView extends RegistrationViewController {
 
     checkServer = async (server) => {
         console.log(!validator.isEmpty(server))
-        if (!validator.isEmpty(server)){
-            const available = await this.checkServerAvailability(server).then((res) => {return res});
+        if (!validator.isEmpty(server)) {
+            const available = await this.checkServerAvailability(server).then((res) => {
+                return res
+            });
             console.log("available => ", available)
             if (!available?.serverCheck) {
-            this.setState({serverError: true})
-            this.setState({serverHelperText: `Cannot connect to: ${server}, please check your address again. Add also "http" or "https" prefix.`})
-        } else {
+                this.setState({serverError: true})
+                this.setState({serverHelperText: `Cannot connect to: ${server}, please check your address again. Add also "http" or "https" prefix.`})
+            } else {
                 this.setState({serverHelperText: `Connected. ${server} is available`})
             }
         }

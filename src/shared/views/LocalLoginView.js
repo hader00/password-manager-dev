@@ -26,7 +26,7 @@ class LocalLoginView extends LocalLoginViewController {
             <FormControl style={{display: "flex"}} onSubmit={this.submitLocalLogin}>
                 <AppBar variant="fullWidth">
                     <Toolbar style={{justifyContent: "space-between"}}>
-                        <div style={{left:"0", display: "flex", alignItems: "center"}}>
+                        <div style={{left: "0", display: "flex", alignItems: "center"}}>
                             <Button
                                 style={{marginRight: "10px", backgroundColor: "#007fff"}}
                                 startIcon={<ArrowBackIosIcon/>}
@@ -36,29 +36,29 @@ class LocalLoginView extends LocalLoginViewController {
                         </div>
                     </Toolbar>
                 </AppBar>
-                    <TextField fullWidth type="password" label="Enter Password" id="password" name="password"
-                               onChange={this.onChange}
-                               value={this.state.password} error={this.state.passwordError}
-                    helperText={this.state.passwordHelperText} required/>
+                <TextField fullWidth type="password" label="Enter Password" id="password" name="password"
+                           onChange={this.onChange}
+                           value={this.state.password} error={this.state.passwordError}
+                           helperText={this.state.passwordHelperText} required/>
 
-                    <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
-                        <div style={{display: "flex", margin: 0}}>
-                            <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
-                                       id="password" name="password" onChange={this.onChange}
-                                       value={this.state.password} helperText={this.state.passwordHelperText}
-                                       required error={this.state.passwordError}
-                                       />
-                            {(this.state.password?.length > 0) ?
-                                <Button
-                                    variant=""
-                                    onClick={this.togglePasswordType}
-                                ><VisibilityIcon/></Button>
-                                :
-                                <></>
-                            }
+                <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
+                    <div style={{display: "flex", margin: 0}}>
+                        <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
+                                   id="password" name="password" onChange={this.onChange}
+                                   value={this.state.password} helperText={this.state.passwordHelperText}
+                                   required error={this.state.passwordError}
+                        />
+                        {(this.state.password?.length > 0) ?
+                            <Button
+                                variant=""
+                                onClick={this.togglePasswordType}
+                            ><VisibilityIcon/></Button>
+                            :
+                            <></>
+                        }
 
-                        </div>
-                    </Box>
+                    </div>
+                </Box>
                 <HiddenField
                     text={"Custom Location"} type={"file"} placeholder={"Select File"}
                     name={"user-file-location"} id={"user-file-location"}
@@ -103,12 +103,12 @@ class LocalLoginView extends LocalLoginViewController {
     }
 
     togglePasswordType = () => {
-            if (this.state.passwordType === "password") {
-                this.setState({passwordType: "text"})
-            } else {
-                this.setState({passwordType: "password"})
-            }
+        if (this.state.passwordType === "password") {
+            this.setState({passwordType: "text"})
+        } else {
+            this.setState({passwordType: "password"})
         }
+    }
 }
 
 LocalLoginView.propTypes = {

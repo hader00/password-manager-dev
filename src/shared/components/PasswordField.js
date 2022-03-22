@@ -25,10 +25,10 @@ export class PasswordField extends Component {
                         disabled: Boolean(props.inputReadOnly),
                     }}
                     value={props.value || ''}
-                           style={{display: "flex", width: "70vw"}}
-                           type={this.state.type}
-                           label={props.placeholder}
-                           name={props.name} id={props.id} onChange={props.onChange}/>
+                    style={{display: "flex", width: "70vw"}}
+                    type={this.state.type}
+                    label={props.placeholder}
+                    name={props.name} id={props.id} onChange={props.onChange}/>
                 {(this.state.type === "password") ?
                     <>
                         {props.value?.length > 0 ?
@@ -106,12 +106,20 @@ export class PasswordField extends Component {
 
 
     copy = async (text) => {
+        let timeout = await window.electron.getDefaultSecurity().then((result) => {
+            console.log(result?.response?.clearTimeout)
+            return parseInt(result?.response?.clearTimeout)*1000;
+        })
+        if (timeout === null) {
+            timeout = 10 * 1000; //10 seconds
+        }
         await navigator.clipboard.writeText(text);
-        setTimeout(() => {
-            navigator.clipboard.writeText("");
-        }, 2000);
-
-        // todo add visual popup
+        if (timeout !== -1) {
+            setTimeout(() => {
+                navigator.clipboard.writeText("");
+                console.log("clearing clipboard")
+            }, timeout);
+        }
     }
 
     async componentDidMount() {

@@ -39,17 +39,20 @@ export class HiddenField extends Component {
                 <Box hidden={!this.state.hiddenField} style={{paddingBottom: "10px"}}>
                     {this.props.type === "file" ?
                         <div>
-                         <Button
-                             style={{marginBottom:"10px"}}
-                             variant="contained"
-                             component="label"
-                         >
-                             {this.props.location === "" ? this.props.placeholder : "Change"}
-                            <input id="hiddenField" type="file" name={this.props.name} hidden/>
-                         </Button>
-                            <label style={{color: "gray", paddingLeft:"10px"}}>{this.props.location}</label>
+                            <Button
+                                style={{marginBottom: "10px"}}
+                                variant="contained"
+                                component="label"
+                            >
+                                {this.props.location === "" ? this.props.placeholder : "Change"}
+                                <input id="hiddenField" type="file" name={this.props.name} hidden/>
+                            </Button>
+                            <label style={{color: "gray", paddingLeft: "10px"}}>{this.props.location}</label>
                             <div style={{marginTop: "10px"}}/>
-                            <label style={{color: "red", paddingLeft:"10px"}}>{(this.props.location.slice(-3) !== ".db" && this.props.location !== "" ) ? "The file format does not seem right. Expected file format is: .db" : ""}</label>
+                            <label style={{
+                                color: "red",
+                                paddingLeft: "10px"
+                            }}>{(this.props.location.slice(-3) !== ".db" && this.props.location !== "") ? "The file format does not seem right. Expected file format is: .db" : ""}</label>
                         </div>
                         :
                         <TextField id="hiddenField" type={this.props.type}
@@ -59,7 +62,8 @@ export class HiddenField extends Component {
                                        if ((e.target.value?.length > 0)) {
                                            this.setState({hiddenField: true})
                                        }
-                                       this.props.onChange(e)}
+                                       this.props.onChange(e)
+                                   }
                                    }
                                    defaultValue={this.props.defaultValue?.length > 0 ? this.props.defaultValue : ""}
                                    style={{display: "flex"}}
@@ -76,6 +80,7 @@ export class HiddenField extends Component {
     toggle = () => {
         this.setState({hiddenField: !this.state.hiddenField})
     }
+
     componentDidMount() {
         console.log("this.props.toggle", this.props.toggle)
     }

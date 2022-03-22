@@ -49,7 +49,8 @@ class DefaultLoginView extends DefaultLoginViewController {
                 </AppBar>
                 <FormControl style={{paddingTop: "60px", display: "flex"}} onSubmit={this.submitLogin}>
                     <TextField type="email" label="Enter Email" id="email" name="email" onChange={this.onChange}
-                               value={this.state.email} required error={this.state.emailError} helperText={this.state.emailHelperText}/>
+                               value={this.state.email} required error={this.state.emailError}
+                               helperText={this.state.emailHelperText}/>
                     <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
                         <div style={{display: "flex", margin: 0}}>
                             <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
@@ -80,7 +81,7 @@ class DefaultLoginView extends DefaultLoginViewController {
                         helpDescription={"For enterprise login"} icon={<Help/>}/>
                     <Button variant="contained" style={{marginBottom: "20px"}} id="submit" type="submit"
                             color="primary" onClick={async (e) => {
-                                await this.submitLogin(e)
+                        await this.submitLogin(e)
                     }}>Login
                         {this.state.loading ?
                             <CircularProgress
@@ -101,7 +102,8 @@ class DefaultLoginView extends DefaultLoginViewController {
                     </ButtonGroup>
                 </FormControl>
                 <Snackbar open={this.state.snackbarOpen} autoHideDuration={6000} onClose={this.handleClose}>
-                    <Alert elevation={6} variant="filled" onClose={this.handleClose} severity="error">Login failed, please check your credentials!</Alert>
+                    <Alert elevation={6} variant="filled" onClose={this.handleClose} severity="error">Login failed,
+                        please check your credentials!</Alert>
                 </Snackbar>
             </Box>
         );
@@ -183,8 +185,10 @@ class DefaultLoginView extends DefaultLoginViewController {
 
     checkServer = async (server) => {
         console.log(!validator.isEmpty(server))
-        if (!validator.isEmpty(server)){
-            const available = await this.checkServerAvailability(server).then((res) => {return res});
+        if (!validator.isEmpty(server)) {
+            const available = await this.checkServerAvailability(server).then((res) => {
+                return res
+            });
             console.log("available => ", available)
             if (!available?.serverCheck) {
                 this.setState({serverError: true})
