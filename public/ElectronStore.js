@@ -10,6 +10,12 @@ class ElectronStore {
                 type: 'string',
                 format: 'email'
             },
+            clearTimeout: {
+                default: '10',
+            },
+            logoutTimeout: {
+                default: '5',
+            },
             customDatabaseLocation: {
                 default: null,
             }

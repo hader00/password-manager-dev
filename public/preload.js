@@ -22,6 +22,63 @@ process.once('loaded', () => {
             });
         },
 
+        async waitForLogout() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:logout', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
+        async getMode() {
+            return new Promise((resolve) => {
+                ipcRenderer.once('mode:response', (_, response) => {
+                    resolve(response);
+                });
+                ipcRenderer.send('mode:get');
+            });
+        },
+
+        async waitForNewItem() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:newItem', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
+        async waitForSaveItem() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:saveItem', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
+        async waitForDeleteItem() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:deleteItem', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
+        async waitForExportItems() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:exportItems', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
+        async waitForAccount() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:account', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
         async selectFile() {
             return new Promise((resolve) => {
                 ipcRenderer.once('selectDatabase:response', (_, response) => {
@@ -40,6 +97,23 @@ process.once('loaded', () => {
             });
         },
 
+        async getDefaultSecurity() {
+            return new Promise((resolve) => {
+                ipcRenderer.once('security:response', (_, response) => {
+                    resolve(response);
+                });
+                ipcRenderer.send('security:get')
+            });
+        },
+        async setDefaultSecurity(timeouts) {
+            return new Promise((resolve) => {
+                ipcRenderer.once('security:setResponse', (_, response) => {
+                    resolve(response);
+                });
+                ipcRenderer.send('security:set', timeouts)
+            });
+        },
+
         async localRegistration(password, location) {
             return new Promise((resolve) => {
                 ipcRenderer.once('localLogin:registerResponse', (_, response) => {
@@ -49,8 +123,17 @@ process.once('loaded', () => {
             });
         },
 
+
+        async exportItems(password, email, location) {
+            return new Promise((resolve) => {
+                ipcRenderer.once('export:response', (_, response) => {
+                    resolve(response);
+                });
+                ipcRenderer.send('export:items', password, email, location);
+            });
+        },
+
         async dbExists() {
-            // todo needs to be handled other way by saving previous user state (custom location etc)
             return new Promise((resolve) => {
                 ipcRenderer.once('db:response', (_, response) => {
                     resolve(response);

@@ -52,7 +52,7 @@ class LocalRegistrationView extends LocalRegistrationViewController {
                         </div>
                     </Box>
                     <HiddenField
-                        text={"Custom Location"} type={"file"} placeholder={"Custom Location"}
+                        text={"Custom Location"} type={"file"} placeholder={"Select Folder"}
                         name={"user-file-location"} id={"user-file-location"}
                         helpDescription={"Enter custom location of passwords database"}
                         location={this.state.location}/>

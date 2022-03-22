@@ -17,6 +17,7 @@ import {
     Toolbar,
     Typography
 } from "@material-ui/core";
+import ViewType from "../other/ViewType";
 
 export class PasswordItemView extends PasswordItemViewController {
 
@@ -49,9 +50,11 @@ export class PasswordItemView extends PasswordItemViewController {
                 upperCase: true,
             },
             showGenerator: false,
-            passwordFiledFocused: false
+            passwordFiledFocused: false,
+            inputReadOnly: this.props.inputReadOnly
         }
         console.log(this.props.password)
+        console.log(this.props.inputReadOnly)
     }
 
 
@@ -76,29 +79,36 @@ export class PasswordItemView extends PasswordItemViewController {
                             edge="end"
                             color="inherit"
                             onClick={(e) => {
-                                if (this.props.inputReadOnly) {
-
+                                if (this.state.inputReadOnly) {
+                                    this.setState({inputReadOnly: false})
                                 } else {
                                     this.setState({open: true})
                                     //this.deletePassword(e);
                                 }}}
                             >
-                            {this.props.inputReadOnly ? <CreateIcon/> : <DeleteIcon />}
+                            {this.state.inputReadOnly ? <CreateIcon/> : <DeleteIcon />}
                         </IconButton>
                     </Toolbar>
                 </AppBar>
                 <Box style={{paddingTop: "60px"}}>
-                <TextField fullWidth style={{marginTop: "10px"}} text={"Title"} value={this.state.title} type={"text"}
+                <TextField inputProps={{
+                    readOnly: Boolean(this.state.inputReadOnly),
+                    disabled: Boolean(this.state.inputReadOnly),
+                }} fullWidth style={{marginTop: "10px"}} text={"Title"} value={this.state.title} type={"text"}
                            label={"Title"}
-                           name={"title"} id={"title"} inputReadOnly={this.props.inputReadOnly} inputRequired={true}
+                           name={"title"} id={"title"} inputRequired={true}
                            onChange={e => this.onChange(e)}
                            helperText={this.state.titleHelperText}
                            required
                            error={this.state.titleError}
                 />
-                <TextField fullWidth style={{marginTop: "10px"}} text={"Username"} value={this.state.username} type={"text"}
+                <TextField inputProps={{
+                    readOnly: Boolean(this.state.inputReadOnly),
+                    disabled: Boolean(this.state.inputReadOnly),
+                }}
+                           fullWidth style={{marginTop: "10px"}} text={"Username"} value={this.state.username} type={"text"}
                            label={"Username"}
-                           name={"username"} id={"username"} inputReadOnly={this.props.inputReadOnly}
+                           name={"username"} id={"username"}
                            inputRequired={true} onChange={e => {
                     this.onChange(e)
                 }}/>
@@ -106,7 +116,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                togglePasswordGenerator={this.togglePasswordGenerator}
                                showingGenerator={this.state.showGenerator}
                                placeholder={"Password"} name={"password"} id={"password"}
-                               inputReadOnly={this.props.inputReadOnly} inputRequired={true}
+                               inputReadOnly={this.state.inputReadOnly} inputRequired={true}
                                onChange={e => {
                                    this.onChange(e);
                                }} showViewPassOptions={!this.props.addingNewItem}/>
@@ -133,18 +143,28 @@ export class PasswordItemView extends PasswordItemViewController {
                         :
                         <></>
                 }
-                <TextField fullWidth style={{marginTop: "10px"}} multiline={true} text={"Description"}
+                <TextField
+                    inputProps={{
+                        readOnly: Boolean(this.state.inputReadOnly),
+                        disabled: Boolean(this.state.inputReadOnly),
+                    }}
+                        fullWidth style={{marginTop: "10px"}} multiline={true} text={"Description"}
                            value={this.state.description} type={"text"}
                            label={"Description"} name={"description"} id={"description"}
-                           inputReadOnly={this.props.inputReadOnly} inputRequired={false}
+                            inputRequired={false}
                            onChange={e => this.onChange(e)}/>
-                <TextField fullWidth style={{marginTop: "10px"}} text={"Url"} value={this.state.url} type={"text"}
+                <TextField
+                    inputProps={{
+                        readOnly: Boolean(this.state.inputReadOnly),
+                        disabled: Boolean(this.state.inputReadOnly),
+                    }}
+                    fullWidth style={{marginTop: "10px"}} text={"Url"} value={this.state.url} type={"text"}
                            label={"URL"} name={"url"}
-                           id={"url"} inputReadOnly={this.props.inputReadOnly} inputRequired={true}
+                           id={"url"} inputRequired={true}
                            onChange={e => this.onChange(e)}/>
                 <Box style={{paddingTop: "10px"}}>
                     {
-                        (!this.props.inputReadOnly && !this.props.addingNewItem) ?
+                        (!this.state.inputReadOnly && !this.props.addingNewItem) ?
                             <>
                                 <Button fullWidth style={{backgroundColor: "#007fff"}} color="primary"
                                         id="submit-button" type="button"
@@ -164,11 +184,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                         onClick={this.openBrowser}>{"Visit page"}</Button> :
                                 <Button fullWidth color="primary" id="submit-button" type="submit"
                                         variant="contained"
-                                        onClick={(e) => {if (this.state.title?.length > 0)  {
-                                            this.addPassword(e);
-                                        } else {
-                                            this.toggleTitleError(e);
-                                        }}}>
+                                        onClick={(e) => {this.savePassword()}}>
                                     Save
                                     {this.state.saveLoading ?
                                         <CircularProgress
@@ -221,6 +237,14 @@ export class PasswordItemView extends PasswordItemViewController {
         )
     };
 
+    savePassword = () => {
+        if (this.state.title?.length > 0)  {
+            this.addPassword();
+        } else {
+            this.toggleTitleError();
+        }
+    }
+
     onChange = (e) => {
         this.setState({[e.target.name]: e.target.value});
         if (e.target.name === "title" && e.target.value?.length > 0) {
@@ -259,6 +283,7 @@ export class PasswordItemView extends PasswordItemViewController {
 
     openBrowser = async () => {
         console.log("shellOpenExternal")
+        console.log(this.state.url)
         await window.electron.shellOpenExternal(this.state.url);
     }
 
@@ -273,6 +298,20 @@ export class PasswordItemView extends PasswordItemViewController {
                 });
             }
         }
+        this.waitForSaveItem();
+        this.waitForDeleteItem();
+    }
+
+    waitForSaveItem = () => {
+        window.electron.waitForSaveItem().then((result) => {
+            this.savePassword();
+        })
+    }
+
+    waitForDeleteItem = () => {
+        window.electron.waitForDeleteItem().then((result) => {
+            this.setState({open: true})
+        })
     }
 }
 

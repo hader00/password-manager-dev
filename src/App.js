@@ -8,6 +8,7 @@ import ViewType from "./shared/other/ViewType"
 import LocalRegistrationView from "./shared/views/LocalRegistrationView";
 import PasswordItemView from "./shared/views/PasswordItemView";
 import {Box, Container} from "@material-ui/core";
+import AccountView from "./shared/views/AccountView";
 
 
 class App extends Component {
@@ -27,6 +28,8 @@ class App extends Component {
             <Container maxWidth="sm">
                 <Box>
                     <SwitchComponents active={this.state.activeView}>
+                        <AccountView componentName={ViewType.accountView}
+                                          changeParentsActiveView={this.changeActiveView}/>
                         <DefaultLoginView componentName={ViewType.defaultLoginView}
                                           changeParentsActiveView={this.changeActiveView}/>
                         <LocalLoginView componentName={ViewType.localLoginView}
@@ -79,6 +82,7 @@ class App extends Component {
     setPasswordItem = (newPasswordItem) => {
         this.setState({passwordItem: newPasswordItem});
     }
+
 }
 
 export default App;

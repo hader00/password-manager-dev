@@ -1,7 +1,7 @@
 const {dialog} = require('electron')
 const path = require('path');
+const fs = require('fs');
 const crypto = require('crypto');
-const {DatabaseCrypto} = require("./DatabaseCrypto");
 const {Crypto} = require("./Crypto");
 const {ElectronStore} = require("./ElectronStore");
 const {DatabaseConnector} = require("./DatabaseConnector");
@@ -19,7 +19,7 @@ class Controller {
         this.loginMode = null;
         this.server = null;
         this.userID = null;
-        this.iv = null;
+        this.passwordKey = null;
         this.localIv = null;
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
@@ -82,7 +82,7 @@ class Controller {
                     })
 
                     that.userID = response.data.id
-                    that.iv = response.data.iv
+                    that.passwordKey = passwordKey
                     that.localIv = encryptionIV
                     that.symmetricKey = decryptedData
                     that.loginMode = DBModeEnum.remote
@@ -152,7 +152,7 @@ class Controller {
             email: email,
             password: masterPasswordHash,
             iv: iv,
-            encryptedSymmetricKey: encryptedSymmetricKey
+            encryptedSymmetricKey: encryptedSymmetricKey,
         })
             .then(async function (response) {
                 console.log("response?.data:", response?.data)
@@ -161,7 +161,7 @@ class Controller {
                         return r
                     })
                     that.userID = response.data.id
-                    that.iv = iv
+                    that.passwordKey = passwordKey
                     that.localIv = encryptionIV
                     that.symmetricKey = symmetricKey
                     that.loginMode = DBModeEnum.remote;
@@ -344,7 +344,7 @@ class Controller {
         if (isEmpty(location)) {
             location = DEFAULT_LOCAL_DB_LOCATION;
         }
-        const localLoginResult = await this.databaseConnector.openDatabase(location, password);
+        let localLoginResult = await this.databaseConnector.openDatabase(location, password);
         if (localLoginResult && this.isFirstLogin) {
             this.electronStore.set("defaultView", VIEW_TYPE.localLoginView)
         }
@@ -358,15 +358,92 @@ class Controller {
             // create Password Key (Master Key)
             console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, LOCAL_SECRET, 100000)
             const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, LOCAL_SECRET, 100000)
-            // create Encryption Key (Stretched Master Key)
-            const encryptionKey = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 32)
-            const encryptionIV = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 16)
+            // create Master Password Hash (Master Password Hash)
+            const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
+            let msg = "SELECT * FROM Validation";
+            let fetchedValidation = await this.databaseConnector.sendMessage(msg)
+                .then(result => {
+                    console.log("--------------------------------------");
+                    console.log("fetchedValidation async", result.response, result.result)
+                    if (result.response === true) {
+                        return result.result[0]
+                    } else {
+                        return result.response
+                    }
+                });
+            console.log("fetchedValidation", fetchedValidation)
+            if (fetchedValidation['item'] === masterPasswordHash) {
+                // create Encryption Key (Stretched Master Key)
+                const encryptionKey = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 32)
+                const encryptionIV = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 16)
 
-            this.loginMode = DBModeEnum.local
-            this.localIv = encryptionIV
-            this.symmetricKey = encryptionKey
+                this.loginMode = DBModeEnum.local
+                this.localIv = encryptionIV
+                this.passwordKey = passwordKey
+                this.symmetricKey = encryptionKey
+                this.electronStore.set("defaultView", VIEW_TYPE.localLoginView)
+                this.electronStore.set("customDatabaseLocation", location)
+            } else {
+                localLoginResult = false
+            }
         }
         return localLoginResult;
+    }
+
+    async exportPasswords(password, email, location) {
+        console.log(this.loginMode)
+        if (this.loginMode === DBModeEnum.remote) {
+            // normalize master password
+            console.log("calling Crypto.getHKDF with:", email, SECRET, 16)
+            const stretchedEmail = await Crypto.getHKDF(email, SECRET, 16);
+            // normalize master password
+            console.log("normalize")
+            const normalizedMasterPassword = password.normalize('NFKD')
+            // stretch master password to 32 bytes
+            console.log("Crypto.getHKDF with: ", normalizedMasterPassword, stretchedEmail, 32)
+            const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, stretchedEmail, 32)
+            // create Password Key (Master Key)
+            console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, stretchedEmail, 100000)
+            const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, stretchedEmail, 100000)
+            console.log(passwordKey, this.passwordKey)
+            if (passwordKey !== this.passwordKey) {
+                return false;
+            }
+        } else {
+            // normalize master password
+            console.log("normalize")
+            const normalizedMasterPassword = password.normalize('NFKD')
+            // stretch master password to 32 bytes
+            console.log("Crypto.getHKDF with: ", normalizedMasterPassword, LOCAL_SECRET, 32)
+            const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, LOCAL_SECRET, 32)
+            // create Password Key (Master Key)
+            console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, LOCAL_SECRET, 100000)
+            const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, LOCAL_SECRET, 100000)
+            console.log(passwordKey, this.passwordKey)
+            if (passwordKey !== this.passwordKey) {
+                return false;
+            }
+        }
+        let decryptedPasswords = []
+        const fetchedPasswords = await this.fetchPasswords()
+        for (const password1 of fetchedPasswords) {
+            console.log(password1)
+            if (password1['password'] !== '') {
+                password1['password'] = await this.decryptPassword(password1['password'], this.symmetricKey)
+            }
+            decryptedPasswords.push(password1)
+        }
+        console.log("decryptedPasswords", decryptedPasswords)
+        const keys = Object.keys(decryptedPasswords[0]);
+        let result = keys.join(",") + "\n";
+        decryptedPasswords.forEach(function(obj){
+            result += keys.map(k => obj[k]).join(",") + "\n";
+        });
+        console.log("result", result)
+        const date = new Date();
+        const timedate = date.toISOString().slice(0,19).replace(/-/g,"").replace(/T/g,"").replace(/:/g,"");
+        fs.writeFileSync(location + `/${timedate}.csv`, result);
+        return true
     }
 
     async localRegistration(password, location) {
@@ -375,7 +452,7 @@ class Controller {
         } else {
             location = path.resolve(location, DATABASE_FILENAME)
         }
-        const localRegistrationResult = this.databaseConnector.createDatabase(location);
+        const localRegistrationResult = await this.databaseConnector.createDatabase(location);
 
         if (localRegistrationResult && this.isFirstLogin) {
             this.electronStore.set("defaultView", VIEW_TYPE.localLoginView)
@@ -391,10 +468,20 @@ class Controller {
             // create Password Key (Master Key)
             console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, LOCAL_SECRET, 100000)
             const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, LOCAL_SECRET, 100000)
+            // create Master Password Hash (Master Password Hash)
+            const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
             // create Encryption Key (Stretched Master Key)
             const encryptionKey = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 32)
             const encryptionIV = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 16)
 
+            let msg = `INSERT INTO Validation (item) VALUES ('${masterPasswordHash}');`
+            await this.databaseConnector.sendMessage(msg)
+                .then(result => {
+                    console.log("--------------------------------------");
+                    console.log("addSuccess async", result.response)
+                    return result.response
+                });
+            this.passwordKey = passwordKey
             this.loginMode = DBModeEnum.local
             this.localIv = encryptionIV
             this.symmetricKey = encryptionKey
@@ -402,208 +489,8 @@ class Controller {
         return localRegistrationResult
     }
 
-
-
-
-
-
-
-    // todo delete
-    async remoteLogin2(server, email, password, saveEmail) {
-        let remoteLoginSuccess;
-        let that = this;
-
-        remoteLoginSuccess = axios.post(`${this.getServer(server)}/api/password-manager/user-login`, {
-            email: email,
-            password: DatabaseCrypto.getHMAC(password)
-        })
-            .then(function (response) {
-                console.log("response:", response)
-                if (response?.data?.success === true) {
-                    that.userID = response.data.id;
-                    that.loginMode = DBModeEnum.remote;
-                    return true;
-                }
-                return false;
-            })
-            .catch(function (error) {
-                console.log("error:", error.data)
-                console.log(error.data);
-                return false;
-            });
-
-        if (remoteLoginSuccess && saveEmail) {
-            this.electronStore.set("storedEmail", email)
-        }
-        return remoteLoginSuccess;
-    }
-
-    async remoteRegistration2(server, email, password, confirmationPassword, firstName, lastName) {
-        if (password !== confirmationPassword) {
-            return false;
-        }
-        let that = this;
-        return axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
-
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            password: DatabaseCrypto.getHMAC(password)
-        })
-            .then(function (response) {
-                if (response?.data?.success === true) {
-                    that.userID = response.data.id;
-                    that.loginMode = DBModeEnum.remote;
-                    return true;
-                }
-                return false;
-            })
-            .catch(function (error) {
-                console.log(error.data);
-                return false;
-            });
-    }
-
-    async addPassword2(title, description, url, username, password) {
-        let addSuccess;
-        console.log(password)
-        if (password !== "" && password !== null && password !== undefined && password !== "undefined") {
-            password = DatabaseCrypto.encrypt(password);
-        }
-        if (this.databaseConnector.existsDatabase() && this.databaseConnector.getMode() === this.loginMode && this.loginMode === DBModeEnum.local) {
-            let msg = `INSERT INTO Passwords (title, description, url, username, password)` +
-                `VALUES ('${title}', '${description}', '${url}', ` +
-                `'${username}', '${password}');`
-            addSuccess = await this.databaseConnector.sendMessage(msg)
-                .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("addSuccess async", result.response)
-                    return result.response
-                });
-        } else {
-            addSuccess = await axios.post(`${this.getServer("")}/api/password-manager/password-create`, {
-                title: title,
-                description: description,
-                url: url,
-                username: username,
-                password: password,
-                userID: this.userID,
-            })
-                .then(function (response) {
-                    console.log(response);
-                    return response?.data?.success;
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    return false
-                });
-
-        }
-        console.log("addSuccess sync", addSuccess);
-        console.log("^should have same value");
-        return addSuccess
-    }
-
-    async updatePassword2(id, title, description, url, username, password) {
-        console.log(id, title, description, url, username, password)
-        let updateSuccess;
-        password = DatabaseCrypto.encrypt(password);
-        if (this.databaseConnector.existsDatabase() && this.databaseConnector.getMode() === this.loginMode && this.loginMode === DBModeEnum.local) {
-            let msg = `UPDATE Passwords ` +
-                `SET title = '${title}', description = '${description}', url = '${url}', ` +
-                `username = '${username}', password = '${password}' ` +
-                `WHERE Id = ${id};`
-            updateSuccess = await this.databaseConnector.sendMessage(msg)
-                .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("updatePassword async", result.response)
-                    return result.response
-                });
-        } else {
-            updateSuccess = await axios.post(`${this.getServer("")}/api/password-manager/password-update`, {
-                id: id,
-                title: title,
-                description: description,
-                url: url,
-                username: username,
-                password: password,
-                userID: this.userID,
-            })
-                .then(function (response) {
-                    console.log(response);
-                    return response?.data?.success;
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    return false
-                });
-        }
-        return updateSuccess
-    }
-
-    async deletePassword2(id) {
-        let deleteSuccess;
-        if (this.databaseConnector.existsDatabase() && this.databaseConnector.getMode() === this.loginMode && this.loginMode === DBModeEnum.local) {
-            let msg = `DELETE FROM Passwords WHERE id = ${id}`;
-            deleteSuccess = await this.databaseConnector.sendMessage(msg)
-                .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("deleteSuccess async", result.response)
-                    return result.response
-                });
-        } else {
-            deleteSuccess = await axios.post(`${this.getServer("")}/api/password-manager/password-delete`, {
-                id: id,
-                userID: this.userID,
-            })
-                .then(function (response) {
-                    console.log(response);
-                    return response?.data?.success;
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    return false
-                });
-        }
-        return deleteSuccess
-    }
-
-    async fetchPasswords2() {
-        let fetchedPasswords;
-        if (this.loginMode === DBModeEnum.local && this.databaseConnector.existsDatabase() && this.databaseConnector.getMode() === this.loginMode && this.loginMode === DBModeEnum.local) {
-            let msg = "SELECT * FROM Passwords";
-            fetchedPasswords = await this.databaseConnector.sendMessage(msg)
-                .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("fetchPasswords async", result.response, result.result)
-                    if (result.response === true) {
-                        return result.result
-                    }
-                });
-        } else {
-            fetchedPasswords = await axios.post(`${this.getServer("")}/api/password-manager/password-fetch`, {
-                userID: this.userID,
-            })
-                .then(function (response) {
-                    console.log(response.data);
-                    return response.data
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    return []
-                });
-        }
-        console.log("fetchPasswords sync", fetchedPasswords);
-        console.log("^^^^^ should have same value (checking result only)^^^^^");
-        return fetchedPasswords
-    }
-
-    // todo end delete
-
     dbExists() {
-        console.log("!isFirstLogin ", !this.isFirstLogin);
-        //return !this.isFirstLogin
-        return false
+        return !this.isFirstLogin
     }
 
     setWin(win) {
@@ -614,8 +501,24 @@ class Controller {
         return this.electronStore.get("defaultView")
     }
 
+    getDefaultSecurity() {
+        const clearTimeout = this.electronStore.get("clearTimeout")
+        const logoutTimeout = this.electronStore.get("logoutTimeout")
+        return {clearTimeout: clearTimeout, logoutTimeout: logoutTimeout}
+    }
+    setDefaultSecurity(timeouts) {
+        console.log(timeouts)
+        this.electronStore.set("clearTimeout", timeouts['clipboardTime'])
+        this.electronStore.set("logoutTimeout",timeouts['time'])
+        return true
+    }
+
     async decryptPassword(password) {
-        return Crypto.decryptPassword(password, this.symmetricKey)
+        if (password !== '') {
+            return Crypto.decryptPassword(password, this.symmetricKey)
+        } else {
+            return password
+        }
     }
 
     async generatePassword(length, specialCharacters, numbers, lowerCase, upperCase) {

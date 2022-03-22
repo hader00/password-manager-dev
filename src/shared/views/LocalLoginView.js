@@ -18,6 +18,7 @@ import {
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import CreateIcon from "@material-ui/icons/Create";
 import {Save} from "@material-ui/icons";
+import VisibilityIcon from "@material-ui/icons/Visibility";
 
 
 class LocalLoginView extends LocalLoginViewController {
@@ -28,7 +29,8 @@ class LocalLoginView extends LocalLoginViewController {
             location: "",
             password: "",
             passwordError: false,
-            passwordHelperText: ""
+            passwordHelperText: "",
+            passwordType: "password"
         }
     }
 
@@ -47,14 +49,31 @@ class LocalLoginView extends LocalLoginViewController {
                         </div>
                     </Toolbar>
                 </AppBar>
-                <Box style={{paddingTop: "60px"}}>
                     <TextField fullWidth type="password" label="Enter Password" id="password" name="password"
                                onChange={this.onChange}
                                value={this.state.password} error={this.state.passwordError}
                     helperText={this.state.passwordHelperText} required/>
-                </Box>
+
+                    <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
+                        <div style={{display: "flex", margin: 0}}>
+                            <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
+                                       id="password" name="password" onChange={this.onChange}
+                                       value={this.state.password} helperText={this.state.passwordHelperText}
+                                       required error={this.state.passwordError}
+                                       />
+                            {(this.state.password?.length > 0) ?
+                                <Button
+                                    variant=""
+                                    onClick={this.togglePasswordType}
+                                ><VisibilityIcon/></Button>
+                                :
+                                <></>
+                            }
+
+                        </div>
+                    </Box>
                 <HiddenField
-                    text={"Custom Location"} type={"file"} placeholder={"Custom Location"}
+                    text={"Custom Location"} type={"file"} placeholder={"Select File"}
                     name={"user-file-location"} id={"user-file-location"}
                     helpDescription={"Enter custom location of passwords database"}
                     location={this.state.location}/>
@@ -95,6 +114,14 @@ class LocalLoginView extends LocalLoginViewController {
     onChange = (e) => {
         this.setState({[e.target.name]: e.target.value});
     }
+
+    togglePasswordType = () => {
+            if (this.state.passwordType === "password") {
+                this.setState({passwordType: "text"})
+            } else {
+                this.setState({passwordType: "password"})
+            }
+        }
 }
 
 LocalLoginView.propTypes = {

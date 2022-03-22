@@ -94,7 +94,6 @@ class ExtensionController {
                         response = {channel: 'passwords:fetchResponse', response: fetchedPasswords};
                         break;
                     case "db:exists":
-                        // todo needs to be handled other way by saving previous user state (custom location etc)
                         const dbExists = that.controller.dbExists();
                         response = {channel: 'db:response', dbExists: dbExists};
                         break;

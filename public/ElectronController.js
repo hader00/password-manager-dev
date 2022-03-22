@@ -16,6 +16,7 @@ class ElectronController {
         console.log("Main is alive")
         //
         this.init();
+
     }
 
     init() {
@@ -33,32 +34,30 @@ class ElectronController {
                             submenu: [
                                 {
                                     label: 'New Password',
+                                    accelerator: 'CmdOrCtrl+N',
                                     click: () => {
+                                        this.win.webContents.send("menu:newItem", true)
                                     },
-                                    accelerator: 'CmdOrCtrl+N'
                                 },
                                 {
-                                    label: 'Save Item',
+                                    label: 'Save Password',
                                     accelerator: 'CmdOrCtrl+S',
                                     click: () => {
+                                        this.win.webContents.send("menu:saveItem", true)
                                     },
                                 },
                                 {
-                                    label: 'Delete Item',
+                                    label: 'Delete Password',
                                     accelerator: 'CmdOrCtrl+Backspace',
                                     click: () => {
-                                    },
-                                },
-                                {
-                                    label: 'Open in Browser',
-                                    accelerator: 'CmdOrCtrl+Shift+O',
-                                    click: () => {
+                                        this.win.webContents.send("menu:deleteItem", true)
                                     },
                                 },
                                 {type: 'separator'},
                                 {
                                     label: 'Export Passwords',
                                     click: () => {
+                                        this.win.webContents.send("menu:exportItems", true)
                                     },
                                 },
                             ]
@@ -75,17 +74,14 @@ class ElectronController {
                                 {
                                     label: 'Account settings',
                                     click: () => {
+                                        this.win.webContents.send("menu:account", true)
                                     },
                                 },
                                 {type: 'separator'},
                                 {
-                                    label: 'Change Master Password',
-                                    click: () => {
-                                    },
-                                },
-                                {
                                     label: 'Logout',
                                     click: () => {
+                                        this.win.webContents.send("menu:logout", true)
                                     },
                                 },
                             ]
@@ -150,6 +146,11 @@ class ElectronController {
                 })
 
                 //********* ipcMain messaging ****//
+                ipcMain.on('anything-asynchronous', (event, arg) => {
+                    this.event = event
+                    console.log("async",arg) // prints "async ping"
+                    //event.reply('asynchronous-reply', 'pong')
+                })
                 // Default View
                 ipcMain.on('defaultView:get', (e) => {
                     const defaultView = this.controller.getDefaultView()
@@ -251,15 +252,35 @@ class ElectronController {
                         e.sender.send('passwords:fetchResponse', {response: fetchedPasswords});
                     });
                 });
-
-                // @deprecated, introduce check via electronStore
+                // Export Items
+                ipcMain.on('export:items', async (e, password, email, location) => {
+                    const success = await this.controller.exportPasswords(password, email, location);
+                    console.log("export passwords success => ", success)
+                    e.sender.send('export:response', {response: success});
+                });
+                // Export Items
+                ipcMain.on('mode:get', async (e, ) => {
+                    const mode = await this.controller.getLoginMode();
+                    e.sender.send('mode:response', {response: mode});
+                });
+                // Check if db exists
                 ipcMain.on('db:exists', (e) => {
-                    // todo needs to be handled other way by saving previous user state (custom location etc)
                     const dbExists = this.controller.dbExists();
                     console.log("dbExists => ", dbExists)
                     e.sender.send('db:response', {dbExists: dbExists});
                 });
-
+                // Check default logout and clipboard timeouts
+                ipcMain.on('security:get', (e) => {
+                    const timeouts = this.controller.getDefaultSecurity();
+                    e.sender.send('security:response', {response: timeouts});
+                });
+                // Set default logout and clipboard timeouts
+                ipcMain.on('security:set', (e, timeouts) => {
+                    console.log('security:set', timeouts)
+                    const response = this.controller.setDefaultSecurity(timeouts);
+                    e.sender.send('security:setResponse', {response: response});
+                });
+                // Open browser
                 ipcMain.on("browser:open", (e, url) => {
                     console.log("opening")
                     shell.openExternal(url).then((r) => {

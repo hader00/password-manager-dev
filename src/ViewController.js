@@ -67,8 +67,10 @@ class DefaultLoginViewController extends Component {
         return await window.electron.checkServerAvailability(server)
     }
     //
-    dbExists = () => {
-        window.electron.dbExists().then((result) => {
+    dbExists = async () => {
+        console.log("clicking on dbExists")
+        await window.electron.dbExists().then((result) => {
+            console.log("result.dbExists", result.dbExists)
             if (result.dbExists === true) {
                 this.popAndChangeView(ViewType.localLoginView);
             } else {
@@ -221,10 +223,25 @@ class RegistrationViewController extends Component {
     }
 }
 
+class PasswordListViewController extends Component {
+    selectFolder = () => {
+        let element = document.getElementById('hiddenField')
+            if (element !== null) {
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.electron.selectFolder().then((result) => {
+                        this.setState({location: result.selectedFolder})
+                    });
+                })
+            }
+    }
+}
+
 export {
     LocalLoginViewController,
     LocalRegistrationViewController,
     DefaultLoginViewController,
     PasswordItemViewController,
-    RegistrationViewController
+    RegistrationViewController,
+    PasswordListViewController
 }

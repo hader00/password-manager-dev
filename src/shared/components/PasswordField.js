@@ -19,7 +19,12 @@ export class PasswordField extends Component {
         const props = this.props
         return (
             <div style={{marginTop: "10px", display: "flex"}}>
-                <TextField value={props.value || ''}
+                <TextField
+                    inputProps={{
+                        readOnly: Boolean(props.inputReadOnly),
+                        disabled: Boolean(props.inputReadOnly),
+                    }}
+                    value={props.value || ''}
                            style={{display: "flex", width: "70vw"}}
                            type={this.state.type}
                            label={props.placeholder}
@@ -99,8 +104,13 @@ export class PasswordField extends Component {
         )
     }
 
+
     copy = async (text) => {
         await navigator.clipboard.writeText(text);
+        setTimeout(() => {
+            navigator.clipboard.writeText("");
+        }, 2000);
+
         // todo add visual popup
     }
 

@@ -1,4 +1,5 @@
 const ViewType = {
+    accountView: "account",
     defaultLoginView: "login",
     localLoginView: "local",
     localRegistrationView: "local-registration",
