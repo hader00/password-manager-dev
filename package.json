@@ -49,7 +49,6 @@
   "scripts": {
     "start": "concurrently \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\"",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "dist": "yarn build && electron-builder -mwl",
     "dist-mac": "yarn build && electron-builder -m",

@@ -24,14 +24,15 @@ class ExtensionController {
                 switch (message.channel) {
                     case "defaultView:get":
                         const defaultView = that.controller.getDefaultView()
-                        response = {channel: 'defaultView:response', defaultView: defaultView}
+                        const {logoutTimeout} = that.controller.getDefaultSecurity()
+                        response = {channel: 'defaultView:response', defaultView: defaultView, timeout: logoutTimeout}
                         break;
                     case "password:decrypt":
                         const decryptedPassword = await that.controller.decryptPassword(message.password)
                         response = {channel: 'password:decryptResponse', password: decryptedPassword}
                         break;
                     case "password:generate":
-                        const generatedPassword = that.controller.generatePassword(message.length, message.specialCharacters, message.numbers, message.lowerCase, message.upperCase)
+                        const generatedPassword = await that.controller.generatePassword(message.length, message.specialCharacters, message.numbers, message.lowerCase, message.upperCase)
                         response = {channel: 'password:generateResponse', password: generatedPassword}
                         break;
                     case "selectDatabase:get":
@@ -58,7 +59,9 @@ class ExtensionController {
                         response = {channel: 'remoteLogin:response', remoteLoginSuccess: remoteLoginSuccess};
                         break;
                     case "email:get":
+                        console.log("here")
                         const email = await that.controller.getEmail();
+                        console.log(email)
                         response = {channel: 'email:response', email: email};
                         break;
                     case "server:check":
@@ -66,7 +69,9 @@ class ExtensionController {
                         response = {channel: 'server:response', serverCheck: serverCheck};
                         break;
                     case "server:get":
+                        console.log("here")
                         const storedServer = await that.controller.getStoredServer()
+                        console.log(storedServer)
                         response = {channel: 'server:getResponse', storedServer: storedServer}
                         break;
                     case "remoteRegistration:register":
@@ -77,15 +82,16 @@ class ExtensionController {
                         };
                         break;
                     case "passwords:add":
-                        const addSuccess = that.controller.addPassword(message.title, message.description, message.url, message.username, message.password);
+                        const addSuccess = await that.controller.addPassword(message.title, message.description, message.url, message.username, message.password);
+                        console.log("addSuccess", addSuccess)
                         response = {channel: 'passwords:addResponse', addSuccess: addSuccess};
                         break;
                     case "passwords:update":
-                        const updateSuccess = that.controller.updatePassword(message.id, message.title, message.description, message.url, message.username, message.password);
+                        const updateSuccess = await that.controller.updatePassword(message.id, message.title, message.description, message.url, message.username, message.password);
                         response = {channel: 'passwords:updateResponse', updateSuccess: updateSuccess};
                         break;
                     case "passwords:delete":
-                        const deleteSuccess = that.controller.deletePassword(message.id);
+                        const deleteSuccess = await that.controller.deletePassword(message.id);
                         response = {channel: 'passwords:deleteResponse', deleteSuccess: deleteSuccess};
                         break;
                     case "passwords:fetch":

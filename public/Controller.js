@@ -23,6 +23,7 @@ class Controller {
         this.localIv = null;
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
+        this.extensionState = null;
 
         if (!this.electronStore.has("defaultView")) {
             this.isFirstLogin = true;
@@ -100,6 +101,10 @@ class Controller {
         if (remoteLoginSuccess && saveEmail) {
             this.electronStore.set("storedEmail", email)
         }
+        if (remoteLoginSuccess) {
+            this.extensionState = true
+        }
+        this.logout();
         return remoteLoginSuccess;
     }
 
@@ -146,7 +151,7 @@ class Controller {
             encryptedSymmetricKey: encryptedSymmetricKey,
             server: this.getServer(server)
         })
-        return axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
+        const registrationSuccess = axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -173,6 +178,11 @@ class Controller {
                 console.log("error", error.data)
                 return false;
             });
+        if (registrationSuccess) {
+            this.extensionState = true
+        }
+        this.logout();
+        return registrationSuccess
     }
 
     async fetchPasswords() {
@@ -387,6 +397,10 @@ class Controller {
                 localLoginResult = false
             }
         }
+        if (localLoginResult) {
+            this.extensionState = true
+        }
+        this.logout();
         return localLoginResult;
     }
 
@@ -486,6 +500,10 @@ class Controller {
             this.localIv = encryptionIV
             this.symmetricKey = encryptionKey
         }
+        if (localRegistrationResult) {
+            this.extensionState = true
+        }
+        this.logout();
         return localRegistrationResult
     }
 
@@ -498,7 +516,11 @@ class Controller {
     }
 
     getDefaultView() {
-        return this.electronStore.get("defaultView")
+        if (this.extensionState === true) {
+            return "passwordList"
+        } else {
+            return this.electronStore.get("defaultView")
+        }
     }
 
     getDefaultSecurity() {
@@ -506,10 +528,12 @@ class Controller {
         const logoutTimeout = this.electronStore.get("logoutTimeout")
         return {clearTimeout: clearTimeout, logoutTimeout: logoutTimeout}
     }
+
     setDefaultSecurity(timeouts) {
         console.log(timeouts)
         this.electronStore.set("clearTimeout", timeouts['clipboardTime'])
         this.electronStore.set("logoutTimeout",timeouts['time'])
+        this.logout();
         return true
     }
 
@@ -599,6 +623,21 @@ class Controller {
 
     getDatabaseConnector() {
         return this.databaseConnector
+    }
+
+    logout() {
+        let logoutTimeout = parseInt(this.electronStore.get("logoutTimeout")) * 60 * 1000 //convert to minutes
+        let that = this;
+        setTimeout(function() {
+            that.loginMode = null;
+            that.server = null;
+            that.userID = null;
+            that.passwordKey = null;
+            that.localIv = null;
+            that.symmetricKey = null;
+            that.customDatabaseLocation = null;
+            that.extensionState = null;
+        }, logoutTimeout);
     }
 }
 

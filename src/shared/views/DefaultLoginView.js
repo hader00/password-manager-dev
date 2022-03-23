@@ -34,7 +34,8 @@ class DefaultLoginView extends DefaultLoginViewController {
             emailError: false,
             serverError: false,
             serverHelperText: "",
-            snackbarOpen: false
+            snackbarOpen: false,
+            emailHelperText: ""
         };
     }
 

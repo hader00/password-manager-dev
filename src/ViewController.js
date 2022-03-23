@@ -263,6 +263,10 @@ class AccountViewController extends Component {
     getDefaultSecurity = async () => {
         return window.electron.getDefaultSecurity()
     }
+
+    setDefaultSecurity = async (timeouts) => {
+        return window.electron.setDefaultSecurity(timeouts)
+    }
 }
 
 export {

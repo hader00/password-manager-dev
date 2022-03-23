@@ -40,6 +40,7 @@ export class PasswordListView extends PasswordListViewController {
         this.getMode();
         this.selectFolder();
         this.waitForAccountFromElectron();
+        this.autoLogOut().then(r => {return r})
     }
 
     waitForAccountFromElectron = () => {
@@ -128,6 +129,22 @@ export class PasswordListView extends PasswordListViewController {
             this.setState({[type]: "text"})
         } else {
             this.setState({[type]: "password"})
+        }
+    }
+
+    autoLogOut = async () => {
+        let timeout = await window.electron.getDefaultSecurity().then((result) => {
+            console.log(result?.response?.logoutTimeout)
+            return parseInt(result?.response?.logoutTimeout) * 60 * 1000;
+        })
+        if (timeout === null) {
+            timeout = 5 * 60 * 1000; // 5 minutes
+        }
+        console.log("timeout setting to ", timeout)
+        if (timeout !== -1) {
+            setTimeout(() => {
+                this.props.changeParentsActiveView(ViewType.defaultLoginView)
+            }, timeout);
         }
     }
 

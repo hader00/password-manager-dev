@@ -123,7 +123,7 @@ class AccountView extends AccountViewController {
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevState.time !== this.state.time || prevState.customTime !== this.state.customTime
             || prevState.clipboardTime !== this.state.clipboardTime || prevState.customClipboardTime !== this.state.customClipboardTime) {
-            this.setDefaultSecurity();
+            this.setDefaultSecurityFromElectron();
         }
     }
 
@@ -154,7 +154,7 @@ class AccountView extends AccountViewController {
 
     }
 
-    setDefaultSecurity = () => {
+    setDefaultSecurityFromElectron = () => {
         let timeouts = {
             time: 0,
             clipboardTime: 0,
@@ -169,6 +169,7 @@ class AccountView extends AccountViewController {
         } else {
             timeouts['time'] = this.state.customTime
         }
+        this.setDefaultSecurity(timeouts).then(r => {return r})
     }
 }
 
