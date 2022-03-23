@@ -70,7 +70,7 @@ class DefaultLoginView extends DefaultLoginViewController {
                         </div>
                     </Box>
                     <HiddenField
-                        text={"Custom Server"} type={"text"} placeholder={"Enter Server (https://localhost:8686)"}
+                        text={"Custom Server"} type={"text"} placeholder={"Enter Server (https://localhost:6868)"}
                         name={"server"}
                         helperText={this.state.serverHelperText}
                         error={this.state.serverError}

@@ -123,7 +123,7 @@ class RegistrationView extends RegistrationViewController {
                 </Box>
                 <HiddenField
                     onChange={this.onChange} onKeyDown={this.onEnterPress}
-                    text={"Custom Server"} type={"text"} placeholder={"Enter Server (https://localhost:8686)"}
+                    text={"Custom Server"} type={"text"} placeholder={"Enter Server (https://localhost:6868)"}
                     name={"server"}
                     id={"server"}
                     helpDescription={"For enterprise login"}

@@ -151,7 +151,7 @@ class Controller {
             encryptedSymmetricKey: encryptedSymmetricKey,
             server: this.getServer(server)
         })
-        const registrationSuccess = axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
+        const registrationSuccess = await axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -175,7 +175,7 @@ class Controller {
                 return false;
             })
             .catch(function (error) {
-                console.log("error", error.data)
+                console.log("error", error)
                 return false;
             });
         if (registrationSuccess) {
