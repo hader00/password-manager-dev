@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import ViewType from "../other/ViewType";
 import PropTypes from "prop-types";
 import {AppBar, Box, Button, Select, TextField, Toolbar, Typography} from "@material-ui/core";

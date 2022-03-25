@@ -7,11 +7,35 @@ The project demonstrates an implementation of password manager
 in [electron](https://www.electronjs.org) and [reactjs](https://reactjs.org).
 
 This repository contains client's application.
+Default server is running on: [https://password-manager-mysql.herokuapp.com](https://password-manager-mysql.herokuapp.com)
 
-## Other parts
+## Related projects
 Chromium based browser extension is accessible on: [github.com/hader00/password-manager-extension-dev](https://github.com/hader00/password-manager-extension-dev)
 
-Serve is accessible on: [github.com/hader00/password-manager-app-server](https://github.com/hader00/password-manager-app-server)
+Server is accessible on: [github.com/hader00/password-manager-app-server](https://github.com/hader00/password-manager-app-server)
+
+## How to install
+Visit [Github Release](https://github.com/hader00/password-manager-dev/releases) and download the latest installer for your operating system.
+
+Additionally, you can download [Chrome extension](https://github.com/hader00/password-manager-extension-dev/releases) and build [custom server](https://github.com/hader00/password-manager-app-server/).
+
+## How to build locally
+1. Clone the repository,
+2. Install required dependencies,
+3. Run `yarn install`,
+4. Run `yarn start`,
+5. Follow the guide on [how to set up custom server](https://github.com/hader00/password-manager-app-server/blob/main/README.md), or use the default server,
+6. Additionally, download or build [Chrome extension](https://github.com/hader00/password-manager-extension-dev).
+
+## Required dependencies
+- [node](https://nodejs.org/en/download/)
+- [yarn](https://classic.yarnpkg.com/en/)
+
+Other dependencies will be automatically installed using:
+
+`yarn install` 
+
+in the project folder.
 
 
 ## Available Scripts
@@ -21,10 +45,6 @@ In the project directory, you can run:
 ### `yarn start`
 
 Runs the app in the development mode.
-
-### `yarn build`
-
-Builds the app for production to the `build` folder.
 
 ### `yarn dist`
 
@@ -67,4 +87,4 @@ Install new versions in package.json:
 
 After dependencies update you may need to use 
 
-`electron-rebuild -f` to rebuild electron packages
+`electron-rebuild -f` to rebuild electron packages if you face errors after update.

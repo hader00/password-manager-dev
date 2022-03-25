@@ -54,7 +54,8 @@
     "dist-mac": "yarn build && electron-builder -m",
     "dist-win": "yarn build && electron-builder -w",
     "dist-linux": "yarn build && electron-builder -l",
-    "rebuild-electron": "electron-builder install-app-deps"
+    "rebuild-electron": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "concurrently": "^6.4.0",
