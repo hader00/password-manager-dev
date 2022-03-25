@@ -74,7 +74,7 @@ class DefaultLoginView extends DefaultLoginViewController {
                         name={"server"}
                         helperText={this.state.serverHelperText}
                         error={this.state.serverError}
-                        toggle={this.state.server !== ""}
+                        toggle={this.state.server === ""}
                         value={this.state.server} onChange={this.onChange} onKeyDown={async (e) => {
                         await this.onEnterPress(e)
                         console.log(this.state.server)

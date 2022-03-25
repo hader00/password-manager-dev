@@ -280,6 +280,10 @@ class ElectronController {
                     const response = this.controller.setDefaultSecurity(timeouts);
                     e.sender.send('security:setResponse', {response: response});
                 });
+                // Set default logout and clipboard timeouts
+                ipcMain.on('logout:set', (e) => {
+                    this.controller.logoutImmediate();
+                });
                 // Open browser
                 ipcMain.on("browser:open", (e, url) => {
                     console.log("opening")

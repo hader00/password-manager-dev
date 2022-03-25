@@ -59,6 +59,7 @@ export class PasswordListView extends PasswordListViewController {
     waitForLogout = () => {
         window.electron.waitForLogout().then((result) => {
             this.props.changeParentsActiveView(ViewType.defaultLoginView)
+            this.logoutImmediate()
         })
     }
 

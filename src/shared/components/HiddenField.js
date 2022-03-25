@@ -78,6 +78,12 @@ export class HiddenField extends Component {
     }
 
     toggle = () => {
+        if (this.state.hiddenField) {
+            this.props.onChange({target: {
+                name: this.props.name,
+                value: ""
+            }})
+        }
         this.setState({hiddenField: !this.state.hiddenField})
     }
 

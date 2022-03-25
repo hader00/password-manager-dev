@@ -79,6 +79,15 @@ process.once('loaded', () => {
             });
         },
 
+
+        async logoutImmediate() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('logout:set', (_, response) => {
+                    resolve(response);
+                });
+            });
+        },
+
         async selectFile() {
             return new Promise((resolve) => {
                 ipcRenderer.once('selectDatabase:response', (_, response) => {

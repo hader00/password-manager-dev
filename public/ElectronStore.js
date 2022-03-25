@@ -10,6 +10,9 @@ class ElectronStore {
                 type: 'string',
                 format: 'email'
             },
+            storedServer: {
+                type: 'string',
+            },
             clearTimeout: {
                 default: '10',
             },

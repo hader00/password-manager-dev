@@ -248,6 +248,10 @@ class PasswordListViewController extends Component {
     waitForAccount = async () => {
         return await window.electron.waitForAccount()
     }
+
+    logoutImmediate = () => {
+        return window.electron.logoutImmediate()
+    }
 }
 
 class PasswordFieldController extends Component {

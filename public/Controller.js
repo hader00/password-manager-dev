@@ -97,7 +97,6 @@ class Controller {
                 return false;
             });
 
-        console.log("remoteLoginSuccess: ", remoteLoginSuccess, "saveEmail: ", saveEmail)
         if (remoteLoginSuccess && saveEmail) {
             this.electronStore.set("storedEmail", email)
         }
@@ -187,6 +186,8 @@ class Controller {
 
     async fetchPasswords() {
         let decryptedFetchedPasswords = []
+        const symmetricKey = this.symmetricKey
+        console.log("symmetricKey", this.symmetricKey)
         if (this.loginMode === DBModeEnum.local) {
             let msg = "SELECT * FROM Passwords";
             let fetchedPasswords = await this.databaseConnector.sendMessage(msg)
@@ -201,13 +202,14 @@ class Controller {
             fetchedPasswords.forEach(pasword => {
                 console.log("password", pasword)
                 console.log("item: ", pasword['item'])
-                let item = JSON.parse(Crypto.decryptPassword(pasword['item'], this.symmetricKey))
+                let item = JSON.parse(Crypto.decryptPassword(pasword['item'], symmetricKey))
                 item['id'] = pasword['id'];
                 console.log("password", pasword)
                 decryptedFetchedPasswords.push(item)
                 console.log("decrypted Fetched Passwords", fetchedPasswords);
             })
         } else {
+            let that = this
             let fetchedPasswords = await axios.post(`${this.getServer("")}/api/password-manager/password-fetch`, {
                 userID: this.userID,
             })
@@ -223,7 +225,8 @@ class Controller {
             fetchedPasswords.forEach(pasword => {
                 console.log("password", pasword)
                 console.log("item: ", pasword['item'])
-                let item = JSON.parse(Crypto.decryptPassword(pasword['item'], this.symmetricKey))
+                console.log("symmetricKey", symmetricKey)
+                let item = JSON.parse(Crypto.decryptPassword(pasword['item'].toString(), symmetricKey))
                 item['id'] = pasword['id'];
                 console.log("password", pasword)
                 decryptedFetchedPasswords.push(item)
@@ -575,16 +578,18 @@ class Controller {
     }
 
     getServer(server) {
-        if (isEmpty(server)) {
+        if (isEmpty(server) && this.server === null) {
             server = "https://password-manager-mysql.herokuapp.com";
+        } else {
+            server = this.server
         }
-        //todo check server validity (with api)
+        console.log("server:", server)
         return server
     }
 
     async isServerValid(server) {
         console.log("server", server)
-        return await axios.get(`${this.getServer(server)}/available`
+        return await axios.get(`${server}/available`
             ).then((res) => {
             console.log(res);
             if (res.data.success) {
@@ -625,9 +630,22 @@ class Controller {
         return this.databaseConnector
     }
 
+    logoutImmediate() {
+        this.loginMode = null;
+        this.server = null;
+        this.userID = null;
+        this.passwordKey = null;
+        this.localIv = null;
+        this.symmetricKey = null;
+        this.customDatabaseLocation = null;
+        this.extensionState = null;
+        this.server = null;
+    }
+
     logout() {
         let logoutTimeout = parseInt(this.electronStore.get("logoutTimeout")) * 60 * 1000 //convert to minutes
         let that = this;
+
         setTimeout(function() {
             that.loginMode = null;
             that.server = null;
@@ -637,6 +655,7 @@ class Controller {
             that.symmetricKey = null;
             that.customDatabaseLocation = null;
             that.extensionState = null;
+            that.server = null;
         }, logoutTimeout);
     }
 }
