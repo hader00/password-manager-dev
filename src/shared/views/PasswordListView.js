@@ -29,7 +29,8 @@ export class PasswordListView extends PasswordListViewController {
             locationError: "",
             localMode: false,
             selectFolderLoaded: false,
-            timer: null
+            timer: null,
+            fetchTimer: null
         }
     }
 
@@ -42,6 +43,7 @@ export class PasswordListView extends PasswordListViewController {
         this.selectFolder();
         this.waitForAccountFromElectron();
         this.autoLogOut().then(r => {return r})
+        this.autoFetch().then(r => {return r})
     }
 
     waitForAccountFromElectron = () => {
@@ -148,10 +150,20 @@ export class PasswordListView extends PasswordListViewController {
         }
     }
 
+    autoFetch = async () => {
+            let fetchTimer = setTimeout(() => {
+                this.props.fetchAllPasswords()
+            },  10000);
+            this.setState({fetchTimer: fetchTimer})
+    }
+
     render() {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
             if (this.state.timer !== null) {
                 clearTimeout(this.state.timer)
+            }
+            if (this.state.fetchTimer !== null) {
+                clearTimeout(this.state.fetchTimer)
             }
             this.props.setPasswordItem(
                 {

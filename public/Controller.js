@@ -80,7 +80,6 @@ class Controller {
         if (remoteLoginSuccess) {
             this.extensionState = true
         }
-        this.logout();
         return remoteLoginSuccess;
     }
 
@@ -140,7 +139,6 @@ class Controller {
         if (registrationSuccess) {
             this.extensionState = true
         }
-        this.logout();
         return registrationSuccess
     }
 
@@ -326,7 +324,6 @@ class Controller {
         if (localLoginResult) {
             this.extensionState = true
         }
-        this.logout();
         return localLoginResult;
     }
 
@@ -411,7 +408,6 @@ class Controller {
         if (localRegistrationResult) {
             this.extensionState = true
         }
-        this.logout();
         return localRegistrationResult
     }
 
@@ -440,7 +436,6 @@ class Controller {
     setDefaultSecurity(timeouts) {
         this.electronStore.set("clearTimeout", timeouts['clipboardTime'])
         this.electronStore.set("logoutTimeout",timeouts['time'])
-        this.logout();
         return true
     }
 
@@ -535,7 +530,6 @@ class Controller {
     }
 
     logoutImmediate(caller) {
-
         this.loginMode = null;
         this.server = null;
         this.userID = null;
@@ -549,24 +543,6 @@ class Controller {
         this.electronTriedLogout = false;
     }
 
-    logout() {
-        /*
-        let logoutTimeout = parseInt(this.electronStore.get("logoutTimeout")) * 60 * 1000 //convert to minutes
-        let that = this;
-
-        setTimeout(function() {
-            that.loginMode = null;
-            that.server = null;
-            that.userID = null;
-            that.passwordKey = null;
-            that.localIv = null;
-            that.symmetricKey = null;
-            that.customDatabaseLocation = null;
-            that.extensionState = null;
-            that.server = null;
-        }, logoutTimeout);
-         */
-    }
 }
 
 module.exports = {Controller}
