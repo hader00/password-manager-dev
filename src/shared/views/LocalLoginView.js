@@ -36,12 +36,7 @@ class LocalLoginView extends LocalLoginViewController {
                         </div>
                     </Toolbar>
                 </AppBar>
-                <TextField fullWidth type="password" label="Enter Password" id="password" name="password"
-                           onChange={this.onChange}
-                           value={this.state.password} error={this.state.passwordError}
-                           helperText={this.state.passwordHelperText} required/>
-
-                <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
+                <Box style={{paddingTop: "50px", paddingBottom: "10px"}}>
                     <div style={{display: "flex", margin: 0}}>
                         <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
                                    id="password" name="password" onChange={this.onChange}

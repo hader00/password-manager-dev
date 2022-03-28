@@ -77,7 +77,6 @@ class DefaultLoginView extends DefaultLoginViewController {
                         toggle={this.state.server === ""}
                         value={this.state.server} onChange={this.onChange} onKeyDown={async (e) => {
                         await this.onEnterPress(e)
-                        console.log(this.state.server)
                     }}
                         helpDescription={"For enterprise login"} icon={<Help/>}/>
                     <Button variant="contained" style={{marginBottom: "20px"}} id="submit" type="submit"
@@ -185,12 +184,10 @@ class DefaultLoginView extends DefaultLoginViewController {
     }
 
     checkServer = async (server) => {
-        console.log(!validator.isEmpty(server))
         if (!validator.isEmpty(server)) {
             const available = await this.checkServerAvailability(server).then((res) => {
                 return res
             });
-            console.log("available => ", available)
             if (!available?.serverCheck) {
                 this.setState({serverError: true})
                 this.setState({serverHelperText: `Cannot connect to: ${server}, please check your address again. Add also "http" or "https" prefix.`})

@@ -10,7 +10,6 @@ class DatabaseConnector {
     async openDatabase(location) {
         this.location = location;
 
-        console.log("checking if DB exists: ", fs.existsSync(this.location));
         if (fs.existsSync(this.location)) {
             this.database = new sqlite3.Database(this.location, (err) => {
                     if (err) {
@@ -25,7 +24,6 @@ class DatabaseConnector {
     async createDatabase(location) {
         this.location = location;
         this.database = new sqlite3.Database(location, (err) => {
-            console.log("location =>", location)
             if (err) console.error('Database opening error: ', err);
         });
         const createPasswordsTable =

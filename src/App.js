@@ -67,7 +67,6 @@ class App extends Component {
     }
 
     fetchAllPasswords = () => {
-        console.log("Fetching all passwords");
         window.electron.fetchAllPPasswords().then((result) => {
             this.setState({passwords: result.response});
         });

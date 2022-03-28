@@ -24,6 +24,8 @@ class Controller {
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
         this.extensionState = null;
+        this.extensionIsLogin = false;
+        this.electronTriedLogout = false;
 
         if (!this.electronStore.has("defaultView")) {
             this.isFirstLogin = true;
@@ -39,55 +41,30 @@ class Controller {
 
         // generate Salt (Stretched email to 16 bytes)
         const stretchedEmail = await Crypto.getHKDF(email, SECRET, 16);
-        console.log("stretchedEmail", stretchedEmail)
         // normalize master password
         const normalizedMasterPassword = masterPassword.normalize('NFKD')
-        console.log("normalizedMasterPassword", normalizedMasterPassword)
         // stretch master password to 32 bytes
         const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, stretchedEmail, 32)
-        console.log("stretchedMasterPassword", stretchedMasterPassword)
         // create Password Key (Master Key)
         const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, stretchedEmail, 100000)
-        console.log("passwordKey", passwordKey)
         // create Master Password Hash (Master Password Hash)
         const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
-        console.log("masterPasswordHash", masterPasswordHash)
 
-        console.log("sending: ", {
-            email: email,
-            password: masterPasswordHash,
-            server: this.getServer(server)
-        })
         remoteLoginSuccess = await axios.post(`${this.getServer(server)}/api/password-manager/user-login`, {
             email: email,
             password: masterPasswordHash
         })
             .then(async function (response) {
-                console.log("response?.data:", response?.data)
-                console.log("success: ",response?.data?.success === true)
                 if (response?.data?.success === true) {
                     const encryptionKey = await Crypto.getHKDF(passwordKey, stretchedEmail, 32).then(r => {return r})
-                    console.log("encryptionKey: ", encryptionKey)
-                    console.log("THIScalling Crypto.decrypt with : ", response.data.encryptedSymmetricKey, response.data.iv, encryptionKey)
                     const {decryptedData} = Crypto.decrypt(response.data.encryptedSymmetricKey, response.data.iv, encryptionKey)
-                    console.log("decryptedData: ", decryptedData)
                     const encryptionIV = await Crypto.getHKDF(decryptedData, stretchedEmail, 16).then(r => {return r})
-                    console.log("encryptionIV: ", encryptionIV)
-
-                    console.log("saving:", {
-                        userID: response.data.id,
-                        iv: response.data.iv,
-                        localIv: encryptionIV,
-                        symmetricKey: decryptedData,
-                        loginMode: DBModeEnum.remote,
-                    })
 
                     that.userID = response.data.id
                     that.passwordKey = passwordKey
                     that.localIv = encryptionIV
                     that.symmetricKey = decryptedData
                     that.loginMode = DBModeEnum.remote
-                    console.log("return true")
                     return true;
                 }
                 return false;
@@ -108,23 +85,18 @@ class Controller {
     }
 
     async remoteRegistration(server, email, masterPassword, confirmationPassword, firstName, lastName) {
-        console.log("calling remote registration with:", server, email, masterPassword, confirmationPassword, firstName, lastName)
         if (masterPassword !== confirmationPassword) {
             return false;
         }
         let that = this;
 
         // generate Salt (Stretched email to 16 bytes)
-        console.log("calling Crypto.getHKDF with:", email, SECRET, 16)
         const stretchedEmail = await Crypto.getHKDF(email, SECRET, 16);
         // normalize master password
-        console.log("normalize")
         const normalizedMasterPassword = masterPassword.normalize('NFKD')
         // stretch master password to 32 bytes
-        console.log("Crypto.getHKDF with: ", normalizedMasterPassword, stretchedEmail, 32)
         const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, stretchedEmail, 32)
         // create Password Key (Master Key)
-        console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, stretchedEmail, 100000)
         const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, stretchedEmail, 100000)
 
         // create Encryption Key (Stretched Master Key)
@@ -134,22 +106,11 @@ class Controller {
         // Create SymmetricKey
         const symmetricKey = crypto.randomBytes(32).toString('hex');
         // encrypt Symmetric Key
-        console.log("THISCrypto.encrypt with: ", symmetricKey, iv, encryptionKey)
         let { encryptedData} = Crypto.encrypt(symmetricKey, iv, encryptionKey)
-        console.log("THISencryptedData", encryptedData)
         const encryptedSymmetricKey = encryptedData
         // create Master Password Hash (Master Password Hash)
         const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
 
-        console.log("sending: ", {
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            password: masterPasswordHash,
-            iv: iv,
-            encryptedSymmetricKey: encryptedSymmetricKey,
-            server: this.getServer(server)
-        })
         const registrationSuccess = await axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
             firstName: firstName,
             lastName: lastName,
@@ -159,7 +120,6 @@ class Controller {
             encryptedSymmetricKey: encryptedSymmetricKey,
         })
             .then(async function (response) {
-                console.log("response?.data:", response?.data)
                 if (response?.data?.success === true) {
                     const encryptionIV = await Crypto.getHKDF(symmetricKey, stretchedEmail, 16).then(r => {
                         return r
@@ -187,26 +147,18 @@ class Controller {
     async fetchPasswords() {
         let decryptedFetchedPasswords = []
         const symmetricKey = this.symmetricKey
-        console.log("symmetricKey", this.symmetricKey)
         if (this.loginMode === DBModeEnum.local) {
             let msg = "SELECT * FROM Passwords";
             let fetchedPasswords = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("fetchPasswords async", result.response, result.result)
                     if (result.response === true) {
                         return result.result
                     }
                 });
-            console.log("encrypted Fetched Passwords", fetchedPasswords);
             fetchedPasswords.forEach(pasword => {
-                console.log("password", pasword)
-                console.log("item: ", pasword['item'])
                 let item = JSON.parse(Crypto.decryptPassword(pasword['item'], symmetricKey))
                 item['id'] = pasword['id'];
-                console.log("password", pasword)
                 decryptedFetchedPasswords.push(item)
-                console.log("decrypted Fetched Passwords", fetchedPasswords);
             })
         } else {
             let that = this
@@ -214,23 +166,16 @@ class Controller {
                 userID: this.userID,
             })
                 .then(function (response) {
-                    console.log(response.data);
                     return response.data
                 })
                 .catch(function (error) {
                     console.log(error);
                     return []
                 });
-            console.log("encrypted Fetched Passwords", fetchedPasswords);
             fetchedPasswords.forEach(pasword => {
-                console.log("password", pasword)
-                console.log("item: ", pasword['item'])
-                console.log("symmetricKey", symmetricKey)
                 let item = JSON.parse(Crypto.decryptPassword(pasword['item'].toString(), symmetricKey))
                 item['id'] = pasword['id'];
-                console.log("password", pasword)
                 decryptedFetchedPasswords.push(item)
-                console.log("decrypted Fetched Passwords", fetchedPasswords);
             })
         }
         return decryptedFetchedPasswords
@@ -240,7 +185,6 @@ class Controller {
     async addPassword(title, description, url, username, password) {
         let status;
 
-        console.log("calling Crypto.encryptPassword with:", password, this.symmetricKey);
         if (password !== "" && password !== null && password !== undefined && password !== "undefined") {
             password = Crypto.encryptPassword(password, this.symmetricKey);
         }
@@ -251,15 +195,11 @@ class Controller {
             username: username,
             password: password
         }
-        console.log("calling Crypto.encryptPassword with:", JSON.stringify(item), this.symmetricKey);
         let encryptedItem = Crypto.encryptPassword(JSON.stringify(item), this.symmetricKey);
-        console.log("result:", encryptedItem);
         if (this.loginMode === DBModeEnum.local) {
             let msg = `INSERT INTO Passwords (item) VALUES ('${encryptedItem}');`
             status = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("addSuccess async", result.response)
                     return result.response
                 });
         } else {
@@ -268,8 +208,6 @@ class Controller {
                 userID: this.userID,
             })
                 .then(function (response) {
-                    console.log("response", response);
-                    console.log("response?.data", response?.data);
                     return response?.data?.success;
                 })
                 .catch(function (error) {
@@ -282,7 +220,6 @@ class Controller {
 
     async updatePassword(id, title, description, url, username, password) {
         let status;
-        console.log("calling Crypto.encryptPassword with:", password, this.symmetricKey);
         if (password !== "" && password !== null && password !== undefined && password !== "undefined") {
             password = Crypto.encryptPassword(password, this.symmetricKey);
         }
@@ -293,7 +230,6 @@ class Controller {
             username: username,
             password: password
         }
-        console.log("calling Crypto.encryptPassword with:", JSON.stringify(item), this.symmetricKey);
         let encryptedItem = Crypto.encryptPassword(JSON.stringify(item), this.symmetricKey);
 
         if (this.loginMode === DBModeEnum.local) {
@@ -302,8 +238,6 @@ class Controller {
                 `WHERE Id = ${id};`
             status = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("updatePassword async", result.response)
                     return result.response
                 });
         } else {
@@ -313,8 +247,6 @@ class Controller {
                 userID: this.userID,
             })
                 .then(function (response) {
-                    console.log("response", response);
-                    console.log("response?.data", response?.data);
                     return response?.data?.success;
                 })
                 .catch(function (error) {
@@ -331,8 +263,6 @@ class Controller {
             let msg = `DELETE FROM Passwords WHERE id = ${id}`;
             status = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("deleteSuccess async", result.response)
                     return result.response
                 });
         } else {
@@ -341,7 +271,6 @@ class Controller {
                 userID: this.userID,
             })
                 .then(function (response) {
-                    console.log(response);
                     return response?.data?.success;
                 })
                 .catch(function (error) {
@@ -363,28 +292,22 @@ class Controller {
         }
         if (localLoginResult === true) {
             // normalize master password
-            console.log("normalize")
             const normalizedMasterPassword = password.normalize('NFKD')
             // stretch master password to 32 bytes
-            console.log("Crypto.getHKDF with: ", normalizedMasterPassword, LOCAL_SECRET, 32)
             const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, LOCAL_SECRET, 32)
             // create Password Key (Master Key)
-            console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, LOCAL_SECRET, 100000)
             const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, LOCAL_SECRET, 100000)
             // create Master Password Hash (Master Password Hash)
             const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
             let msg = "SELECT * FROM Validation";
             let fetchedValidation = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("fetchedValidation async", result.response, result.result)
                     if (result.response === true) {
                         return result.result[0]
                     } else {
                         return result.response
                     }
                 });
-            console.log("fetchedValidation", fetchedValidation)
             if (fetchedValidation['item'] === masterPasswordHash) {
                 // create Encryption Key (Stretched Master Key)
                 const encryptionKey = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 32)
@@ -408,35 +331,25 @@ class Controller {
     }
 
     async exportPasswords(password, email, location) {
-        console.log(this.loginMode)
         if (this.loginMode === DBModeEnum.remote) {
             // normalize master password
-            console.log("calling Crypto.getHKDF with:", email, SECRET, 16)
             const stretchedEmail = await Crypto.getHKDF(email, SECRET, 16);
             // normalize master password
-            console.log("normalize")
             const normalizedMasterPassword = password.normalize('NFKD')
             // stretch master password to 32 bytes
-            console.log("Crypto.getHKDF with: ", normalizedMasterPassword, stretchedEmail, 32)
             const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, stretchedEmail, 32)
             // create Password Key (Master Key)
-            console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, stretchedEmail, 100000)
             const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, stretchedEmail, 100000)
-            console.log(passwordKey, this.passwordKey)
             if (passwordKey !== this.passwordKey) {
                 return false;
             }
         } else {
             // normalize master password
-            console.log("normalize")
             const normalizedMasterPassword = password.normalize('NFKD')
             // stretch master password to 32 bytes
-            console.log("Crypto.getHKDF with: ", normalizedMasterPassword, LOCAL_SECRET, 32)
             const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, LOCAL_SECRET, 32)
             // create Password Key (Master Key)
-            console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, LOCAL_SECRET, 100000)
             const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, LOCAL_SECRET, 100000)
-            console.log(passwordKey, this.passwordKey)
             if (passwordKey !== this.passwordKey) {
                 return false;
             }
@@ -444,19 +357,16 @@ class Controller {
         let decryptedPasswords = []
         const fetchedPasswords = await this.fetchPasswords()
         for (const password1 of fetchedPasswords) {
-            console.log(password1)
             if (password1['password'] !== '') {
                 password1['password'] = await this.decryptPassword(password1['password'], this.symmetricKey)
             }
             decryptedPasswords.push(password1)
         }
-        console.log("decryptedPasswords", decryptedPasswords)
         const keys = Object.keys(decryptedPasswords[0]);
         let result = keys.join(",") + "\n";
         decryptedPasswords.forEach(function(obj){
             result += keys.map(k => obj[k]).join(",") + "\n";
         });
-        console.log("result", result)
         const date = new Date();
         const timedate = date.toISOString().slice(0,19).replace(/-/g,"").replace(/T/g,"").replace(/:/g,"");
         fs.writeFileSync(location + `/${timedate}.csv`, result);
@@ -477,13 +387,10 @@ class Controller {
         }
         if (localRegistrationResult === true) {
             // normalize master password
-            console.log("normalize")
             const normalizedMasterPassword = password.normalize('NFKD')
             // stretch master password to 32 bytes
-            console.log("Crypto.getHKDF with: ", normalizedMasterPassword, LOCAL_SECRET, 32)
             const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, LOCAL_SECRET, 32)
             // create Password Key (Master Key)
-            console.log("Crypto.getPBKDF2 with: ", stretchedMasterPassword, LOCAL_SECRET, 100000)
             const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, LOCAL_SECRET, 100000)
             // create Master Password Hash (Master Password Hash)
             const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
@@ -494,8 +401,6 @@ class Controller {
             let msg = `INSERT INTO Validation (item) VALUES ('${masterPasswordHash}');`
             await this.databaseConnector.sendMessage(msg)
                 .then(result => {
-                    console.log("--------------------------------------");
-                    console.log("addSuccess async", result.response)
                     return result.response
                 });
             this.passwordKey = passwordKey
@@ -519,7 +424,7 @@ class Controller {
     }
 
     getDefaultView() {
-        if (this.extensionState === true) {
+        if (this.extensionState === true || this.symmetricKey !== null) {
             return "passwordList"
         } else {
             return this.electronStore.get("defaultView")
@@ -533,12 +438,16 @@ class Controller {
     }
 
     setDefaultSecurity(timeouts) {
-        console.log(timeouts)
         this.electronStore.set("clearTimeout", timeouts['clipboardTime'])
         this.electronStore.set("logoutTimeout",timeouts['time'])
         this.logout();
         return true
     }
+
+    extensionLogin() {
+        this.extensionIsLogin = true;
+    }
+
 
     async decryptPassword(password) {
         if (password !== '') {
@@ -553,11 +462,9 @@ class Controller {
     }
 
     async selectDatabase() {
-        console.log("selecting DB")
         const result = await dialog.showOpenDialog(this.win, {
             properties: ['openFile']
         })
-        console.log('Selected file: => ', result.filePaths)
         let selectedFile = "";
         if (result.filePaths.length > 0) {
             selectedFile = result.filePaths[0]
@@ -569,7 +476,6 @@ class Controller {
         const result = await dialog.showOpenDialog(this.win, {
             properties: ['openDirectory']
         })
-        console.log('Selected folder: => \'', result.filePaths)
         let selectedFolder = "";
         if (result.filePaths.length > 0) {
             selectedFolder = result.filePaths[0]
@@ -583,15 +489,12 @@ class Controller {
         } else {
             server = this.server
         }
-        console.log("server:", server)
         return server
     }
 
     async isServerValid(server) {
-        console.log("server", server)
         return await axios.get(`${server}/available`
             ).then((res) => {
-            console.log(res);
             if (res.data.success) {
                 this.server = server
                 // Save server if not saved before
@@ -602,6 +505,7 @@ class Controller {
             }
             return false
         }).catch((err) => {
+            console.log("error", err)
             return false
         })
     }
@@ -630,7 +534,8 @@ class Controller {
         return this.databaseConnector
     }
 
-    logoutImmediate() {
+    logoutImmediate(caller) {
+
         this.loginMode = null;
         this.server = null;
         this.userID = null;
@@ -640,9 +545,12 @@ class Controller {
         this.customDatabaseLocation = null;
         this.extensionState = null;
         this.server = null;
+        this.extensionIsLogin = false;
+        this.electronTriedLogout = false;
     }
 
     logout() {
+        /*
         let logoutTimeout = parseInt(this.electronStore.get("logoutTimeout")) * 60 * 1000 //convert to minutes
         let that = this;
 
@@ -657,6 +565,7 @@ class Controller {
             that.extensionState = null;
             that.server = null;
         }, logoutTimeout);
+         */
     }
 }
 

@@ -115,7 +115,6 @@ export class PasswordField extends PasswordFieldController {
         if (timeout !== -1) {
             setTimeout(() => {
                 navigator.clipboard.writeText("");
-                console.log("clearing clipboard")
             }, timeout);
         }
     }

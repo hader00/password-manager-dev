@@ -132,13 +132,11 @@ class AccountView extends AccountViewController {
     }
 
     onChange = (e) => {
-        console.log(e.target.name, e.target.value)
         this.setState({[e.target.name]: e.target.value});
     };
 
     getDefaultSecurityFromElectron = async () => {
         let result = await this.getDefaultSecurity()
-        console.log(result)
         if (["-1", "10", "20"].indexOf(result.response.clearTimeout) !== -1) {
             this.setState({clipboardTime: result.response.clearTimeout})
         } else {

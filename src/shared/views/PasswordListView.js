@@ -29,6 +29,7 @@ export class PasswordListView extends PasswordListViewController {
             locationError: "",
             localMode: false,
             selectFolderLoaded: false,
+            timer: null
         }
     }
 
@@ -45,21 +46,21 @@ export class PasswordListView extends PasswordListViewController {
 
     waitForAccountFromElectron = () => {
         this.waitForAccount().then((result) => {
+            clearTimeout(this.state.timer)
             this.props.changeParentsActiveView(ViewType.accountView)
         })
     }
 
     getMode = () => {
         window.electron.getMode().then((result) => {
-            console.log("get mode result: ", result)
             this.setState({localMode: result.response === 0})
         })
     }
 
     waitForLogout = () => {
         window.electron.waitForLogout().then((result) => {
-            this.props.changeParentsActiveView(ViewType.defaultLoginView)
             this.logoutImmediate()
+            this.props.changeParentsActiveView(ViewType.defaultLoginView)
         })
     }
 
@@ -83,7 +84,6 @@ export class PasswordListView extends PasswordListViewController {
     }
 
     exportItems = () => {
-        console.log("exporting items", this.state.password, this.state.location);
         window.electron.exportItems(this.state.password, this.state.email, this.state.location).then((result) => {
             if (result.response === true) {
                 this.setState({open: false});
@@ -120,7 +120,6 @@ export class PasswordListView extends PasswordListViewController {
     }
 
     handlePasswordView = (activePasswordVal, openTypeVal, addingNewItemVal) => {
-        console.log(activePasswordVal, openTypeVal, addingNewItemVal);
         this.setState({activePasswordID: activePasswordVal});
         this.setState({inputReadOnly: openTypeVal});
         this.setState({addingNewItem: addingNewItemVal});
@@ -135,22 +134,25 @@ export class PasswordListView extends PasswordListViewController {
 
     autoLogOut = async () => {
         let timeout = await window.electron.getDefaultSecurity().then((result) => {
-            console.log(result?.response?.logoutTimeout)
             return parseInt(result?.response?.logoutTimeout) * 60 * 1000;
         })
         if (timeout === null) {
             timeout = 5 * 60 * 1000; // 5 minutes
         }
-        console.log("timeout setting to ", timeout)
         if (timeout !== -1) {
-            setTimeout(() => {
+            let timer = setTimeout(() => {
+                this.logoutImmediate()
                 this.props.changeParentsActiveView(ViewType.defaultLoginView)
             }, timeout);
+            this.setState({timer: timer})
         }
     }
 
     render() {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
+            if (this.state.timer !== null) {
+                clearTimeout(this.state.timer)
+            }
             this.props.setPasswordItem(
                 {
                     password: this.props.passwords.length >= 1 ? this.props.passwords.filter(pass => pass.id === this.state.activePasswordID)[0] : [],

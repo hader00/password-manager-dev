@@ -88,7 +88,6 @@ export class HiddenField extends Component {
     }
 
     componentDidMount() {
-        console.log("this.props.toggle", this.props.toggle)
     }
 }
 

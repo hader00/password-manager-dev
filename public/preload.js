@@ -17,7 +17,6 @@ process.once('loaded', () => {
                 ipcRenderer.once('localLogin:response', (_, response) => {
                     resolve(response);
                 });
-                console.log(password, location)
                 ipcRenderer.send('localLogin:login', password, location);
             });
         },
@@ -80,12 +79,8 @@ process.once('loaded', () => {
         },
 
 
-        async logoutImmediate() {
-            return new Promise((resolve) => {
-                ipcRenderer.on('logout:set', (_, response) => {
-                    resolve(response);
-                });
-            });
+        logoutImmediate() {
+            ipcRenderer.send('logout:set')
         },
 
         async selectFile() {
@@ -261,7 +256,6 @@ process.once('loaded', () => {
         },
 
         async shellOpenExternal(url) {
-            console.log("sending")
             return new Promise((resolve) => {
                 ipcRenderer.once('browser:response', (_, arg) => {
                     resolve(arg);

@@ -17,7 +17,6 @@ class Crypto {
     }
 
     static encrypt(data, iv, key) {
-        console.log("data, iv, key", data, iv, key)
         const cipher = crypto.createCipheriv(ALGORITHM,
             Buffer.from(key, "hex"),
             Buffer.from(iv, "hex")
@@ -26,13 +25,10 @@ class Crypto {
             cipher.update(data),
             cipher.final()
         ]);
-        console.log("encrypted:", encrypted)
         return { encryptedData: encrypted.toString('hex') }
     };
 
     static decrypt(encryptedData, iv, key) {
-        console.log("encryptedData, iv, key", encryptedData, iv, key)
-        console.log("encryptedDataHex", encryptedData, iv, key)
         const decipher = crypto.createDecipheriv(ALGORITHM,
             Buffer.from(key, "hex"),
             Buffer.from(iv, "hex")
@@ -41,7 +37,6 @@ class Crypto {
             decipher.update(Buffer.from(encryptedData, "hex")),
             decipher.final()
         ]);
-        console.log("decrypted:", decrypted)
         return { decryptedData: decrypted.toString() };
     };
 
@@ -54,7 +49,6 @@ class Crypto {
             cipher.update(password),
             cipher.final()
         ]);
-        console.log("iv1 => ", iv, iv.toString("hex"), encryptedPassword.toString("hex"))
         return iv.toString("hex").concat(encryptedPassword.toString("hex"));
     };
 

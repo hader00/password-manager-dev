@@ -51,7 +51,6 @@ class LocalRegistrationViewController extends Component {
                 this.props.changeParentsActiveView(ViewType.passwordListView);
             } else {
                 // todo warning
-                console.log("Registration NOT successful");
             }
         });
     }
@@ -68,9 +67,7 @@ class DefaultLoginViewController extends Component {
     }
     //
     dbExists = async () => {
-        console.log("clicking on dbExists")
         await window.electron.dbExists().then((result) => {
-            console.log("result.dbExists", result.dbExists)
             if (result.dbExists === true) {
                 this.popAndChangeView(ViewType.localLoginView);
             } else {
@@ -122,14 +119,10 @@ class PasswordItemViewController extends Component {
     }
     //
     generatePassword = (length, specialCharacters, numbers, lowerCase, upperCase) => {
-        console.log(length, specialCharacters, numbers, lowerCase, upperCase)
         window.electron.generatePassword(length, specialCharacters, numbers, lowerCase, upperCase).then((result) => {
-            console.log(result)
             if (result.password.length > 0) {
                 this.setState({password: result.password})
             } else {
-                console.log("fail")
-                console.log(result)
             }
         });
     }
@@ -148,10 +141,9 @@ class PasswordItemViewController extends Component {
             this.setState({saveLoading: true});
             window.electron.addPassword(title, description, url, username, password).then((result) => {
                 if (result.addSuccess === true) {
-                    console.log(result)
                     this.popView();
                 } else {
-                    console.log(result)
+
                 }
             });
         }
@@ -168,10 +160,8 @@ class PasswordItemViewController extends Component {
             this.setState({updateLoading: true});
             window.electron.updatePassword(id, title, description, url, username, password).then((result) => {
                 if (result.updateSuccess === true) {
-                    console.log(result)
                     this.popView();
                 } else {
-                    console.log(result)
                 }
             });
         }
@@ -182,13 +172,9 @@ class PasswordItemViewController extends Component {
             let id = this.state.id;
             this.setState({deleteLoading: true});
             window.electron.deletePassword(id).then((result) => {
-                console.log("deleting")
                 if (result.deleteSuccess === true) {
-                    console.log(result)
                     this.popView();
                 } else {
-                    console.log("fail")
-                    console.log(result)
                 }
             });
         }
@@ -257,7 +243,6 @@ class PasswordListViewController extends Component {
 class PasswordFieldController extends Component {
     getDefaultSecurity = async () => {
         return await window.electron.getDefaultSecurity().then((result) => {
-            console.log(result?.response?.clearTimeout)
             return parseInt(result?.response?.clearTimeout) * 1000;
         })
     }

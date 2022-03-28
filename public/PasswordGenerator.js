@@ -6,13 +6,10 @@ class PasswordGenerator {
         const UPPER_CASE = upperCase ? "ABCDEFGHIJKLMNOPQRSTUVWXYZ" : []
         const ALL_CHARACTERS = (SPECIAL_CHARACTERS + NUMBERS + LOWER_CASE + UPPER_CASE).split('')
         let generatedPassword = ""
-        console.log(ALL_CHARACTERS)
         for (let i = 0; i < length; i++) {
             let val = ALL_CHARACTERS[(Math.random() * ALL_CHARACTERS.length) | 0]
-            console.log(val)
             generatedPassword = generatedPassword.concat(val.toString())
         }
-        console.log(generatedPassword)
         return generatedPassword
     }
 }

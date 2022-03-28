@@ -11,13 +11,18 @@ class ExtensionController {
         this.init();
     }
 
+    logout() {
+        if (this.sockets !== []) {
+            this.sockets.forEach(s => s.send(JSON.stringify({channel: 'logout:force'})));
+        }
+    }
+
     init() {
         let that = this;
         this.server.on('connection', function (socket) {
             that.sockets.push(socket);
             //
             socket.on('message', async function (msg) {
-                console.log("message")
                 let message = JSON.parse(msg)
                 let response = {}
                 //
@@ -59,9 +64,7 @@ class ExtensionController {
                         response = {channel: 'remoteLogin:response', remoteLoginSuccess: remoteLoginSuccess};
                         break;
                     case "email:get":
-                        console.log("here")
                         const email = await that.controller.getEmail();
-                        console.log(email)
                         response = {channel: 'email:response', email: email};
                         break;
                     case "server:check":
@@ -69,9 +72,7 @@ class ExtensionController {
                         response = {channel: 'server:response', serverCheck: serverCheck};
                         break;
                     case "server:get":
-                        console.log("here")
                         const storedServer = await that.controller.getStoredServer()
-                        console.log(storedServer)
                         response = {channel: 'server:getResponse', storedServer: storedServer}
                         break;
                     case "remoteRegistration:register":
@@ -83,7 +84,6 @@ class ExtensionController {
                         break;
                     case "passwords:add":
                         const addSuccess = await that.controller.addPassword(message.title, message.description, message.url, message.username, message.password);
-                        console.log("addSuccess", addSuccess)
                         response = {channel: 'passwords:addResponse', addSuccess: addSuccess};
                         break;
                     case "passwords:update":
@@ -96,22 +96,25 @@ class ExtensionController {
                         break;
                     case "passwords:fetch":
                         const fetchedPasswords = await that.controller.fetchPasswords();
-                        console.log(fetchedPasswords)
                         response = {channel: 'passwords:fetchResponse', response: fetchedPasswords};
                         break;
                     case "db:exists":
                         const dbExists = that.controller.dbExists();
                         response = {channel: 'db:response', dbExists: dbExists};
                         break;
+                    case "extension:login":
+                        that.controller.extensionLogin();
+                        break;
+                    case "extension:logout":
+                        this.controller.logoutImmediate("extension");
+                        break;
                     default:
                         break;
                 }
-                console.log(response)
                 that.sockets.forEach(s => s.send(JSON.stringify(response)));
             });
             //
             socket.on('close', function () {
-                console.log("close")
                 that.sockets = that.sockets.filter(s => s !== socket);
             });
         });

@@ -194,12 +194,10 @@ class RegistrationView extends RegistrationViewController {
     }
 
     checkServer = async (server) => {
-        console.log(!validator.isEmpty(server))
         if (!validator.isEmpty(server)) {
             const available = await this.checkServerAvailability(server).then((res) => {
                 return res
             });
-            console.log("available => ", available)
             if (!available?.serverCheck) {
                 this.setState({serverError: true})
                 this.setState({serverHelperText: `Cannot connect to: ${server}, please check your address again. Add also "http" or "https" prefix.`})
@@ -237,7 +235,6 @@ class RegistrationView extends RegistrationViewController {
     submitRegistration = async (e) => {
         e.preventDefault();
         let s = this.state
-        console.log(s.server, s.email, s.password, s.confirmPassword, s.firstName, s.lastName)
         this.sanitizeValidation();
         if (s.email.length === 0 || s.password.length === 0 || s.confirmPassword.length === 0 || s.firstName.length === 0 || s.lastName.length === 0) {
             if (s.email.length === 0) {
