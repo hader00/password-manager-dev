@@ -7,7 +7,7 @@
   "description": "Description",
   "license": "MIT",
   "main": "./public/electron.js",
-  "homepage": "https://github.com/hader00/password-manager-dev",
+  "homepage": "./",
   "repository": {
     "type": "git",
     "url": "https://github.com/hader00/password-manager-dev"

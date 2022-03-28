@@ -20,7 +20,6 @@ class Controller {
         this.server = null;
         this.userID = null;
         this.passwordKey = null;
-        this.localIv = null;
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
         this.extensionState = null;
@@ -58,11 +57,9 @@ class Controller {
                 if (response?.data?.success === true) {
                     const encryptionKey = await Crypto.getHKDF(passwordKey, stretchedEmail, 32).then(r => {return r})
                     const {decryptedData} = Crypto.decrypt(response.data.encryptedSymmetricKey, response.data.iv, encryptionKey)
-                    const encryptionIV = await Crypto.getHKDF(decryptedData, stretchedEmail, 16).then(r => {return r})
 
                     that.userID = response.data.id
                     that.passwordKey = passwordKey
-                    that.localIv = encryptionIV
                     that.symmetricKey = decryptedData
                     that.loginMode = DBModeEnum.remote
                     return true;
@@ -120,12 +117,8 @@ class Controller {
         })
             .then(async function (response) {
                 if (response?.data?.success === true) {
-                    const encryptionIV = await Crypto.getHKDF(symmetricKey, stretchedEmail, 16).then(r => {
-                        return r
-                    })
                     that.userID = response.data.id
                     that.passwordKey = passwordKey
-                    that.localIv = encryptionIV
                     that.symmetricKey = symmetricKey
                     that.loginMode = DBModeEnum.remote;
                     return true;
@@ -309,10 +302,8 @@ class Controller {
             if (fetchedValidation['item'] === masterPasswordHash) {
                 // create Encryption Key (Stretched Master Key)
                 const encryptionKey = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 32)
-                const encryptionIV = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 16)
 
                 this.loginMode = DBModeEnum.local
-                this.localIv = encryptionIV
                 this.passwordKey = passwordKey
                 this.symmetricKey = encryptionKey
                 this.electronStore.set("defaultView", VIEW_TYPE.localLoginView)
@@ -393,7 +384,6 @@ class Controller {
             const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
             // create Encryption Key (Stretched Master Key)
             const encryptionKey = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 32)
-            const encryptionIV = await Crypto.getHKDF(passwordKey, LOCAL_SECRET, 16)
 
             let msg = `INSERT INTO Validation (item) VALUES ('${masterPasswordHash}');`
             await this.databaseConnector.sendMessage(msg)
@@ -402,7 +392,6 @@ class Controller {
                 });
             this.passwordKey = passwordKey
             this.loginMode = DBModeEnum.local
-            this.localIv = encryptionIV
             this.symmetricKey = encryptionKey
         }
         if (localRegistrationResult) {
@@ -534,7 +523,6 @@ class Controller {
         this.server = null;
         this.userID = null;
         this.passwordKey = null;
-        this.localIv = null;
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
         this.extensionState = null;
