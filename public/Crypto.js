@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const hkdf  = require('js-crypto-hkdf');
+const hkdf = require('js-crypto-hkdf');
 const {SHA512, ALGORITHM} = require("./Util");
 
 class Crypto {
@@ -25,7 +25,7 @@ class Crypto {
             cipher.update(data),
             cipher.final()
         ]);
-        return { encryptedData: encrypted.toString('hex') }
+        return {encryptedData: encrypted.toString('hex')}
     };
 
     static decrypt(encryptedData, iv, key) {
@@ -37,7 +37,7 @@ class Crypto {
             decipher.update(Buffer.from(encryptedData, "hex")),
             decipher.final()
         ]);
-        return { decryptedData: decrypted.toString() };
+        return {decryptedData: decrypted.toString()};
     };
 
     static encryptPassword(password, key) {

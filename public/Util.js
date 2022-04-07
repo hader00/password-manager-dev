@@ -24,7 +24,7 @@ const VIEW_TYPE = {
 };
 
 function isEmpty(item) {
-    return item === undefined || item === null || item === "" || item === 'undefined'
+    return item === undefined || item === null || item === 'null' || item === "" || item === 'undefined'
 }
 
 module.exports = {

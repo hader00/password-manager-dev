@@ -117,7 +117,9 @@ class AccountView extends AccountViewController {
     }
 
     componentDidMount() {
-        this.getDefaultSecurityFromElectron().then(r => {return r})
+        this.getDefaultSecurityFromElectron().then(r => {
+            return r
+        })
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -167,7 +169,9 @@ class AccountView extends AccountViewController {
         } else {
             timeouts['time'] = this.state.customTime
         }
-        this.setDefaultSecurity(timeouts).then(r => {return r})
+        this.setDefaultSecurity(timeouts).then(r => {
+            return r
+        })
     }
 }
 

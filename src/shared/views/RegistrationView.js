@@ -1,5 +1,4 @@
 import React from 'react';
-import HiddenField from "../components/HiddenField";
 import ViewType from "../other/ViewType";
 import PropTypes from "prop-types";
 import validator from 'validator'
@@ -10,14 +9,19 @@ import {
     Button,
     CircularProgress,
     FormControl,
+    FormControlLabel,
+    IconButton,
     Snackbar,
+    Switch,
     TextField,
     Toolbar,
+    Tooltip,
     Typography
 } from "@material-ui/core";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import Alert from "@material-ui/lab/Alert";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 
 class RegistrationView extends RegistrationViewController {
 
@@ -43,7 +47,8 @@ class RegistrationView extends RegistrationViewController {
             serverHelperText: "",
             passwordType: "password",
             confirmPasswordType: "password",
-            snackbarOpen: false
+            snackbarOpen: false,
+            checked: false
         }
     }
 
@@ -121,14 +126,47 @@ class RegistrationView extends RegistrationViewController {
                         }
                     </div>
                 </Box>
-                <HiddenField
-                    onChange={this.onChange} onKeyDown={this.onEnterPress}
-                    text={"Custom Server"} type={"text"} placeholder={"Enter Server (https://localhost:6868)"}
-                    name={"server"}
-                    id={"server"}
-                    helpDescription={"For enterprise login"}
-                    helperText={this.state.serverHelperText}
-                    error={this.state.serverError}/>
+                <Box style={{display: "block"}}>
+                    <Box style={{display: "flex"}}>
+                        <FormControlLabel
+                            checked={this.state.checked}
+                            value="start"
+                            onChange={(e) => {
+                                this.setState({checked: !this.state.checked})
+                                if (this.state.checked) {
+                                    this.setState({server: ""})
+                                    this.setState({serverError: false})
+                                    this.setState({serverHelperText: ""})
+                                }
+                            }}
+                            control={<Switch color="primary"/>}
+                            label={
+                                <Box style={{display: "flex", color: "dimgray"}}>
+                                    <p>{"Custom Server"}</p>
+                                    <Tooltip title={"For enterprise login"}>
+                                        <IconButton aria-label="questionMark">
+                                            <HelpOutlineIcon/>
+                                        </IconButton>
+                                    </Tooltip>
+                                </Box>
+                            }
+                            labelPlacement="end"
+                        />
+                    </Box>
+                </Box>
+                <Box hidden={!this.state.checked} style={{paddingBottom: "10px"}}>
+                    <TextField id="hiddenField" type={"text"}
+                               value={this.state.server}
+                               onChange={(e) => {
+                                   this.onChange(e)
+                               }
+                               }
+                               style={{display: "flex"}}
+                               label={"Enter Server (https://localhost:6868)"} name={"server"}
+                               error={this.state.serverError}
+                               helperText={this.state.serverHelperText}
+                    />
+                </Box>
                 <Button color="primary" variant="contained" type="submit"
                         onClick={async (e) => {
                             await this.submitRegistration(e)
@@ -258,6 +296,10 @@ class RegistrationView extends RegistrationViewController {
             return
         }
         if (this.checkPassword(this.state.password) || this.checkEmail(this.state.email) || this.checkConfirmPassword(this.state.confirmPassword)) {
+            return
+        }
+        if (this.state.checked && this.state.server === "") {
+            this.setState({serverError: true})
             return
         }
         if (!this.state.loading) {

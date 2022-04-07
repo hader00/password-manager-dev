@@ -68,7 +68,11 @@ class App extends Component {
 
     fetchAllPasswords = () => {
         window.electron.fetchAllPPasswords().then((result) => {
-            this.setState({passwords: result.response});
+            if (result.response === 'undefined' || result.response === undefined) {
+                this.setState({activeView: ViewType.defaultLoginView})
+            } else {
+                this.setState({passwords: result.response});
+            }
         });
     }
 

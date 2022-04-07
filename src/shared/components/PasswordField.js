@@ -107,16 +107,25 @@ export class PasswordField extends PasswordFieldController {
 
 
     copy = async (text) => {
-        let timeout = this.getDefaultSecurity()
+        let that = this
+        let timeout = await this.getDefaultSecurity()
         if (timeout === null) {
             timeout = 10 * 1000; //10 seconds
         }
         await navigator.clipboard.writeText(text);
         if (timeout !== -1) {
-            setTimeout(() => {
-                navigator.clipboard.writeText("");
+            setTimeout(async () => {
+                await navigator.clipboard.writeText("").catch(error => {
+                    that.clearClipboardOnFocus()
+                });
             }, timeout);
         }
+    }
+
+    clearClipboardOnFocus = () => {
+        window.addEventListener('focus', async function () {
+            await navigator.clipboard.writeText("");
+        },{once : true})
     }
 
     async componentDidMount() {

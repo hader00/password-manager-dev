@@ -9,7 +9,7 @@ export class HiddenField extends Component {
         super(props);
         this.state = {
             fileChosen: false,
-            hiddenField: (this.props.toggle)
+            checked: (this.props.checked || this.props.value !== "")
         }
     }
 
@@ -18,7 +18,7 @@ export class HiddenField extends Component {
             <Box style={{display: "block"}}>
                 <Box style={{display: "flex"}}>
                     <FormControlLabel
-                        checked={this.state.hiddenField}
+                        checked={this.state.checked || this.props.value !== ""}
                         value="start"
                         onChange={this.toggle}
                         control={<Switch color="primary"/>}
@@ -36,7 +36,7 @@ export class HiddenField extends Component {
                     />
 
                 </Box>
-                <Box hidden={!this.state.hiddenField} style={{paddingBottom: "10px"}}>
+                <Box hidden={!this.state.checked && this.props.value === ""} style={{paddingBottom: "10px"}}>
                     {this.props.type === "file" ?
                         <div>
                             <Button
@@ -59,13 +59,10 @@ export class HiddenField extends Component {
                                    value={this.props.value}
                                    onKeyDown={this.props.onKeyDown}
                                    onChange={(e) => {
-                                       if ((e.target.value?.length > 0)) {
-                                           this.setState({hiddenField: true})
-                                       }
                                        this.props.onChange(e)
                                    }
                                    }
-                                   defaultValue={this.props.defaultValue?.length > 0 ? this.props.defaultValue : ""}
+                                   defaultValue={this.props.value?.length > 0 ? this.props.value : ""}
                                    style={{display: "flex"}}
                                    label={this.props.placeholder} name={this.props.name}
                                    error={this.props.error}
@@ -78,13 +75,15 @@ export class HiddenField extends Component {
     }
 
     toggle = () => {
-        if (this.state.hiddenField) {
-            this.props.onChange({target: {
-                name: this.props.name,
-                value: ""
-            }})
+        if (this.state.checked) {
+            this.props.onChange({
+                target: {
+                    name: this.props.name,
+                    value: ""
+                }
+            })
         }
-        this.setState({hiddenField: !this.state.hiddenField})
+        this.setState({checked: !this.state.checked})
     }
 
     componentDidMount() {

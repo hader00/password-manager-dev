@@ -5,7 +5,15 @@ const crypto = require('crypto');
 const {Crypto} = require("./Crypto");
 const {ElectronStore} = require("./ElectronStore");
 const {DatabaseConnector} = require("./DatabaseConnector");
-const {VIEW_TYPE, DEFAULT_LOCAL_DB_LOCATION, DATABASE_FILENAME, DBModeEnum, SECRET, isEmpty, LOCAL_SECRET} = require("./Util");
+const {
+    VIEW_TYPE,
+    DEFAULT_LOCAL_DB_LOCATION,
+    DATABASE_FILENAME,
+    DBModeEnum,
+    SECRET,
+    isEmpty,
+    LOCAL_SECRET
+} = require("./Util");
 const {PasswordGenerator} = require("./PasswordGenerator");
 const axios = require('axios');
 
@@ -49,15 +57,19 @@ class Controller {
         // create Master Password Hash (Master Password Hash)
         const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
 
-        remoteLoginSuccess = await axios.post(`${this.getServer(server)}/api/password-manager/user-login`, {
+        const currentServer = this.getServer(server)
+        remoteLoginSuccess = await axios.post(`${currentServer}/api/password-manager/user-login`, {
             email: email,
             password: masterPasswordHash
         })
             .then(async function (response) {
                 if (response?.data?.success === true) {
-                    const encryptionKey = await Crypto.getHKDF(passwordKey, stretchedEmail, 32).then(r => {return r})
+                    const encryptionKey = await Crypto.getHKDF(passwordKey, stretchedEmail, 32).then(r => {
+                        return r
+                    })
                     const {decryptedData} = Crypto.decrypt(response.data.encryptedSymmetricKey, response.data.iv, encryptionKey)
 
+                    that.server = currentServer
                     that.userID = response.data.id
                     that.passwordKey = passwordKey
                     that.symmetricKey = decryptedData
@@ -102,12 +114,14 @@ class Controller {
         // Create SymmetricKey
         const symmetricKey = crypto.randomBytes(32).toString('hex');
         // encrypt Symmetric Key
-        let { encryptedData} = Crypto.encrypt(symmetricKey, iv, encryptionKey)
+        let {encryptedData} = Crypto.encrypt(symmetricKey, iv, encryptionKey)
         const encryptedSymmetricKey = encryptedData
         // create Master Password Hash (Master Password Hash)
         const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
 
-        const registrationSuccess = await axios.post(`${this.getServer(server)}/api/password-manager/user-create`, {
+        const currentServer = this.getServer(server)
+
+        const registrationSuccess = await axios.post(`${currentServer}/api/password-manager/user-create`, {
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -117,6 +131,7 @@ class Controller {
         })
             .then(async function (response) {
                 if (response?.data?.success === true) {
+                    that.server = currentServer
                     that.userID = response.data.id
                     that.passwordKey = passwordKey
                     that.symmetricKey = symmetricKey
@@ -153,7 +168,7 @@ class Controller {
             })
         } else {
             let that = this
-            let fetchedPasswords = await axios.post(`${this.getServer("")}/api/password-manager/password-fetch`, {
+            let fetchedPasswords = await axios.post(`${this.server}/api/password-manager/password-fetch`, {
                 userID: this.userID,
             })
                 .then(function (response) {
@@ -161,7 +176,7 @@ class Controller {
                 })
                 .catch(function (error) {
                     console.log(error);
-                    return []
+                    return undefined
                 });
             fetchedPasswords.forEach(pasword => {
                 let item = JSON.parse(Crypto.decryptPassword(pasword['item'].toString(), symmetricKey))
@@ -194,7 +209,7 @@ class Controller {
                     return result.response
                 });
         } else {
-            status = await axios.post(`${this.getServer("")}/api/password-manager/password-create`, {
+            status = await axios.post(`${this.server}/api/password-manager/password-create`, {
                 item: encryptedItem,
                 userID: this.userID,
             })
@@ -232,7 +247,7 @@ class Controller {
                     return result.response
                 });
         } else {
-            status = await axios.post(`${this.getServer("")}/api/password-manager/password-update`, {
+            status = await axios.post(`${this.server}/api/password-manager/password-update`, {
                 id: id,
                 item: encryptedItem,
                 userID: this.userID,
@@ -257,7 +272,7 @@ class Controller {
                     return result.response
                 });
         } else {
-            status = await axios.post(`${this.getServer("")}/api/password-manager/password-delete`, {
+            status = await axios.post(`${this.server}/api/password-manager/password-delete`, {
                 id: id,
                 userID: this.userID,
             })
@@ -352,16 +367,17 @@ class Controller {
         }
         const keys = Object.keys(decryptedPasswords[0]);
         let result = keys.join(",") + "\n";
-        decryptedPasswords.forEach(function(obj){
+        decryptedPasswords.forEach(function (obj) {
             result += keys.map(k => obj[k]).join(",") + "\n";
         });
         const date = new Date();
-        const timedate = date.toISOString().slice(0,19).replace(/-/g,"").replace(/T/g,"").replace(/:/g,"");
+        const timedate = date.toISOString().slice(0, 19).replace(/-/g, "").replace(/T/g, "").replace(/:/g, "");
         fs.writeFileSync(location + `/${timedate}.csv`, result);
         return true
     }
 
     async localRegistration(password, location) {
+        console.log("password, location", password, location)
         if (isEmpty(location)) {
             location = DEFAULT_LOCAL_DB_LOCATION;
         } else {
@@ -373,6 +389,7 @@ class Controller {
             this.electronStore.set("defaultView", VIEW_TYPE.localLoginView)
             this.electronStore.set("customDatabaseLocation", location)
         }
+        console.log("localRegistrationResult", localRegistrationResult)
         if (localRegistrationResult === true) {
             // normalize master password
             const normalizedMasterPassword = password.normalize('NFKD')
@@ -424,7 +441,7 @@ class Controller {
 
     setDefaultSecurity(timeouts) {
         this.electronStore.set("clearTimeout", timeouts['clipboardTime'])
-        this.electronStore.set("logoutTimeout",timeouts['time'])
+        this.electronStore.set("logoutTimeout", timeouts['time'])
         return true
     }
 
@@ -468,19 +485,16 @@ class Controller {
     }
 
     getServer(server) {
-        if (isEmpty(server) && this.server === null) {
+        if (isEmpty(server)) {
             server = "https://password-manager-mysql.herokuapp.com";
-        } else {
-            server = this.server
         }
         return server
     }
 
     async isServerValid(server) {
         return await axios.get(`${server}/available`
-            ).then((res) => {
+        ).then((res) => {
             if (res.data.success) {
-                this.server = server
                 // Save server if not saved before
                 if (!this.electronStore.has("storedServer")) {
                     this.electronStore.set("storedServer", server)

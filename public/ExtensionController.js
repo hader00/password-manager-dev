@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const {ipcMain} = require("electron");
 
 class ExtensionController {
     constructor(controller) {
@@ -101,6 +102,10 @@ class ExtensionController {
                     case "db:exists":
                         const dbExists = that.controller.dbExists();
                         response = {channel: 'db:response', dbExists: dbExists};
+                        break;
+                    case "security:get":
+                        const timeouts = that.controller.getDefaultSecurity();
+                        response = {channel: 'security:response', response: timeouts};
                         break;
                     case "extension:login":
                         that.controller.extensionLogin();

@@ -232,7 +232,7 @@ class ElectronController {
                     e.sender.send('export:response', {response: success});
                 });
                 // Export Items
-                ipcMain.on('mode:get', async (e, ) => {
+                ipcMain.on('mode:get', async (e,) => {
                     const mode = await this.controller.getLoginMode();
                     e.sender.send('mode:response', {response: mode});
                 });

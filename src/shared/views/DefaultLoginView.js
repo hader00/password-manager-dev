@@ -1,5 +1,4 @@
 import React from 'react';
-import HiddenField from "../components/HiddenField";
 import ViewType from "../other/ViewType";
 import PropTypes from "prop-types";
 import {DefaultLoginViewController} from "../../ViewController";
@@ -10,15 +9,19 @@ import {
     ButtonGroup,
     CircularProgress,
     FormControl,
+    FormControlLabel,
+    IconButton,
     Snackbar,
+    Switch,
     TextField,
     Toolbar,
+    Tooltip,
     Typography
 } from "@material-ui/core";
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import Alert from '@material-ui/lab/Alert';
-import {Help} from "@material-ui/icons";
 import validator from "validator";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 
 class DefaultLoginView extends DefaultLoginViewController {
     constructor(props) {
@@ -35,7 +38,8 @@ class DefaultLoginView extends DefaultLoginViewController {
             serverError: false,
             serverHelperText: "",
             snackbarOpen: false,
-            emailHelperText: ""
+            emailHelperText: "",
+            checked: false
         };
     }
 
@@ -69,16 +73,47 @@ class DefaultLoginView extends DefaultLoginViewController {
 
                         </div>
                     </Box>
-                    <HiddenField
-                        text={"Custom Server"} type={"text"} placeholder={"Enter Server (https://localhost:6868)"}
-                        name={"server"}
-                        helperText={this.state.serverHelperText}
-                        error={this.state.serverError}
-                        toggle={this.state.server === ""}
-                        value={this.state.server} onChange={this.onChange} onKeyDown={async (e) => {
-                        await this.onEnterPress(e)
-                    }}
-                        helpDescription={"For enterprise login"} icon={<Help/>}/>
+                    <Box style={{display: "block"}}>
+                        <Box style={{display: "flex"}}>
+                            <FormControlLabel
+                                checked={this.state.checked}
+                                value="start"
+                                onChange={(e) => {
+                                    this.setState({checked: !this.state.checked})
+                                    if (this.state.checked) {
+                                        this.setState({server: ""})
+                                        this.setState({serverError: false})
+                                        this.setState({serverHelperText: ""})
+                                    }
+                                }}
+                                control={<Switch color="primary"/>}
+                                label={
+                                    <Box style={{display: "flex", color: "dimgray"}}>
+                                        <p>{"Custom Server"}</p>
+                                        <Tooltip title={"For enterprise login"}>
+                                            <IconButton aria-label="questionMark">
+                                                <HelpOutlineIcon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
+                                }
+                                labelPlacement="end"
+                            />
+                        </Box>
+                    </Box>
+                    <Box hidden={!this.state.checked} style={{paddingBottom: "10px"}}>
+                        <TextField id="hiddenField" type={"text"}
+                                   value={this.state.server}
+                                   onChange={(e) => {
+                                       this.onChange(e)
+                                   }
+                                   }
+                                   style={{display: "flex"}}
+                                   label={"Enter Server (https://localhost:6868)"} name={"server"}
+                                   error={this.state.serverError}
+                                   helperText={this.state.serverHelperText}
+                        />
+                    </Box>
                     <Button variant="contained" style={{marginBottom: "20px"}} id="submit" type="submit"
                             color="primary" onClick={async (e) => {
                         await this.submitLogin(e)
@@ -91,14 +126,23 @@ class DefaultLoginView extends DefaultLoginViewController {
                             :
                             <></>
                         }</Button>
-                    <ButtonGroup variant="contained" aria-label="contained primary button group"
-                                 style={{padding: "10px"}}>
-                        <Button color="primary" style={{width: "50vh"}}
+                    <ButtonGroup orientation="vertical">
+
+                        <Button color="primary" variant="contained" style={{padding: "10px", marginTop: "20px"}}
                                 onClick={() => this.popAndChangeView(ViewType.registrationView)}>Create
                             Account
                         </Button>
-                        <Button color="secondary" style={{width: "50vh"}} onClick={this.handleLocalLoginViewChange}>Local
-                            login</Button>
+                        <ButtonGroup variant="contained" aria-label="contained primary button group"
+                                     style={{padding: "10px"}}>
+                            <Button color="secondary" style={{width: "50vh"}} onClick={() => {
+                                this.popAndChangeView(ViewType.localRegistrationView)
+                            }}>Local
+                                registration</Button>
+                            <Button color="secondary" style={{width: "50vh"}} onClick={() => {
+                                this.popAndChangeView(ViewType.localLoginView)
+                            }}>Local
+                                login</Button>
+                        </ButtonGroup>
                     </ButtonGroup>
                 </FormControl>
                 <Snackbar open={this.state.snackbarOpen} autoHideDuration={6000} onClose={this.handleClose}>
@@ -157,18 +201,16 @@ class DefaultLoginView extends DefaultLoginViewController {
         }
     }
 
-    onChangeCheckBox = (e) => {
-        const checked = e.target.checked;
-        this.setState({[e.target.name]: checked})
-    }
-
-
     handleLocalLoginViewChange = () => {
         this.dbExists();
     }
 
     submitLogin = async (e) => {
         e.preventDefault()
+        if (this.state.checked && this.state.server === "") {
+            this.setState({serverError: true})
+            return
+        }
         if (this.state.email.length === 0 || this.state.password.length === 0) {
             if (this.state.email.length === 0) {
                 this.setState({emailError: true})

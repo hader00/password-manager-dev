@@ -1,25 +1,44 @@
 import React from 'react';
 import ViewType from "../other/ViewType"
 import PropTypes from "prop-types";
-import HiddenField from "../components/HiddenField";
 import {LocalRegistrationViewController} from "../../ViewController";
-import {AppBar, Box, Button, FormControl, TextField, Toolbar, Typography} from "@material-ui/core";
+import {
+    AppBar,
+    Box,
+    Button,
+    FormControl,
+    FormControlLabel,
+    IconButton,
+    Switch,
+    TextField,
+    Toolbar,
+    Tooltip,
+    Typography
+} from "@material-ui/core";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import validator from "validator";
 
 
 class LocalRegistrationView extends LocalRegistrationViewController {
     constructor(props) {
         super(props);
         this.state = {
+            loading: false,
             location: "",
-            passwordType: "password"
+            locationError: false,
+            password: "",
+            passwordError: false,
+            passwordHelperText: "",
+            passwordType: "password",
+            checked: false
         }
     }
 
     render() {
         return (
-            <FormControl id="submit-form" onSubmit={this.submitLocalRegistrationLogin}>
+            <FormControl style={{display: "flex"}} onSubmit={this.submitLocalRegistrationLogin}>
                 <AppBar variant="fullWidth">
                     <Toolbar style={{justifyContent: "space-between"}}>
                         <div style={{left: "0", display: "flex", alignItems: "center"}}>
@@ -33,30 +52,87 @@ class LocalRegistrationView extends LocalRegistrationViewController {
                     </Toolbar>
                 </AppBar>
 
-                <Box style={{paddingTop: "60px"}}>
+                <Box style={{paddingTop: "60px", paddingBottom: "10px"}}>
                     <div style={{display: "flex", margin: 0}}>
-                        <TextField fullWidth type={this.state.passwordType} label="Enter Password"
-                                   id="password" name="password" onChange={this.onChange}
-                                   value={this.state.password}/>
-                        {this.state.password?.length > 0 ?
+                        <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
+                                   id="password" name="password" onChange={(e) => {
+                                       this.onChange(e)
+                                if (this.checkPassword(e.target.value)) {
+                                    this.setState({passwordError: true})
+                                    this.setState({passwordHelperText: "Password must be at least 8 charters long and contain one number, one lowercase, one uppercase and one special character (!\"#$%'()*+,-./:;<=>?@[\\]^_`{|}~)!"})
+                                } else {
+                                    this.setState({passwordError: false})
+                                    this.setState({passwordHelperText: ""})
+                                }
+                            }}
+                                   value={this.state.password} error={this.state.passwordError}
+                                   helperText={this.state.passwordHelperText}/>
+                        {(this.state.password?.length > 0) ?
                             <Button
                                 variant=""
-                                onClick={() => {
-                                    this.togglePasswordType("passwordType")
-                                }}
+                                onClick={this.togglePasswordType}
                             ><VisibilityIcon/></Button>
                             :
                             <></>
                         }
                     </div>
                 </Box>
-                <HiddenField
-                    text={"Custom Location"} type={"file"} placeholder={"Select Folder"}
-                    name={"user-file-location"} id={"user-file-location"}
-                    helpDescription={"Enter custom location of passwords database"}
-                    location={this.state.location}/>
-                <Button color="primary" variant="contained" style={{width: "45vh"}} id="submit-button" type="submit"
-                        onClick={this.submitLocalRegistrationLogin}>Create
+                <Box style={{display: "block"}}>
+                    <Box style={{display: "flex"}}>
+                        <FormControlLabel
+                            checked={this.state.checked}
+                            value="start"
+                            onChange={(e) => {
+                                this.setState({checked: !this.state.checked})
+                                if (this.state.checked) {
+                                    this.setState({location: ""})
+                                }
+                            }}
+                            control={<Switch color="primary"/>}
+                            label={
+                                <Box style={{display: "flex", color: "dimgray"}}>
+                                    <p>{"Custom Location"}</p>
+                                    <Tooltip title={"Choose custom location of the database"}>
+                                        <IconButton aria-label="questionMark">
+                                            <HelpOutlineIcon/>
+                                        </IconButton>
+                                    </Tooltip>
+                                </Box>
+                            }
+                            labelPlacement="end"
+                        />
+
+                    </Box>
+                    <Box hidden={!this.state.checked && this.state.location === ""} style={{paddingBottom: "10px"}}>
+                        <div>
+                            <Button
+                                style={{marginBottom: "10px"}}
+                                variant="contained"
+                                component="label"
+                            >
+                                {this.state.location === "" ? "Select Folder" : "Change"}
+                                <input id="hiddenField" type="file" name={"user-file-location"} hidden/>
+                            </Button>
+                            <div></div>
+                            <label style={{
+                                color: "gray",
+                                paddingTop: "10px",
+                                paddingBottom: "10px"
+                            }}>{this.state.location}</label>
+                            <label style={{
+                                color: "red",
+                                paddingTop: "10px",
+                                paddingBottom: "10px"
+                            }}>{this.state.locationError ? "Please choose location for database" : ""}</label>
+                        </div>
+                    </Box>
+                </Box>
+                <Button fullWidth color="primary" variant="contained" id="submit-button" type="submit"
+                        onClick={async (e) => {
+                            this.setState({loading: true});
+                            await this.submitLocalRegistrationLogin(e)
+                        }
+                        }>Create
                     Database
                 </Button>
             </FormControl>
@@ -64,19 +140,47 @@ class LocalRegistrationView extends LocalRegistrationViewController {
     }
 
     submitLocalRegistrationLogin = (e) => {
-        let userPassword = document.getElementById('password');
+        e.preventDefault();
+        this.sanitize()
+        if (this.state.location === "" && this.state.checked) {
+            this.setState({locationError: true})
+        } else if (this.state.password === "") {
+            this.setState({passwordError: true})
+            this.setState({passwordHelperText: "Password must be at least 8 charters long and contain one number, one lowercase, one uppercase and one special character (!\"#$%'()*+,-./:;<=>?@[\\]^_`{|}~)!"})
+        } else if (this.checkPassword(this.state.password)) {
 
-        if (userPassword.checkValidity()) {
-            e.preventDefault();
-            this.submitRegistration(userPassword.value, this.state.location);
+        } else {
+
+            this.submitRegistration(this.state.password, this.state.location);
         }
     }
 
-    togglePasswordType = (type) => {
-        if (this.state[type] === "password") {
-            this.setState({[type]: "text"})
+    sanitize = () => {
+        this.setState({locationError: false})
+        this.setState({passwordHelperText: ""})
+        this.setState({passwordError: false})
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevState.location !== this.state.location) {
+            this.setState({locationError: false})
+        }
+    }
+
+    checkPassword = (password) => {
+        if (!validator.matches(password, /(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[!"#$%'()*+,-./:;<=>?@\[\\\]^_`{|}~]).{8,}/)) {
+            this.setState({passwordError: true})
+            this.setState({passwordHelperText: "Password must be at least 8 charters long and contain one number, one lowercase, one uppercase and one special character (!\"#$%'()*+,-./:;<=>?@[\\]^_`{|}~)!"})
+            return true
+        }
+        return false
+    }
+
+    togglePasswordType = () => {
+        if (this.state.passwordType === "password") {
+            this.setState({passwordType: "text"})
         } else {
-            this.setState({[type]: "password"})
+            this.setState({passwordType: "password"})
         }
     }
 

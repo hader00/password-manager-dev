@@ -79,6 +79,7 @@ class DefaultLoginViewController extends Component {
     submitSubmitLogin = (userServer, userEmail, userPassword, saveEmail) => {
         window.electron.submitLogin(userServer, userEmail, userPassword, saveEmail).then((result) => {
             if (result.remoteLoginSuccess === true) {
+                this.setState({server: ""})
                 this.popAndChangeView(ViewType.passwordListView);
             } else {
                 this.setState({loading: false});
@@ -101,8 +102,11 @@ class DefaultLoginViewController extends Component {
     }
 
     getServer = () => {
-        window.electron.getServer().then((result) => {
-            this.setState({server: result.server})
+        window.electron.getServer().then(async (result) => {
+            console.log("result.server", result.server)
+            this.setState({server: result.server === "null" && result.server === null ? "" : result.server})
+            this.setState({checked: result.server !== "null" && result.server !== null && result.server !== ""})
+            await this.checkServer(result.server)
         })
     }
 }
@@ -243,7 +247,14 @@ class PasswordListViewController extends Component {
 class PasswordFieldController extends Component {
     getDefaultSecurity = async () => {
         return await window.electron.getDefaultSecurity().then((result) => {
-            return parseInt(result?.response?.clearTimeout) * 1000;
+            let timeout = null
+            if (result?.response !== null) {
+                timeout = parseInt(result?.response?.clearTimeout)
+                if (timeout !== -1) {
+                    timeout = timeout * 1000
+                }
+            }
+            return timeout;
         })
     }
 }
