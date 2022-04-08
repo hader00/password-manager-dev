@@ -20,14 +20,20 @@
     "mac": {
       "category": "public.app-category.productivity",
       "target": "dmg",
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ]
     },
     "linux": {
       "category": "Network",
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ]
     },
     "win": {
-      "publish": ["github"],
+      "publish": [
+        "github"
+      ],
       "publisherName": "Martin Haderka"
     }
   },
@@ -35,6 +41,7 @@
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.61",
+    "@vscode/sqlite3": "^5.0.8",
     "axios": "^0.26.1",
     "crypto-js": "^4.1.1",
     "electron-cookies": "^1.1.0",
@@ -42,7 +49,6 @@
     "electron-store": "^8.0.1",
     "electron-window-state": "^5.0.3",
     "js-crypto-hkdf": "^1.0.4",
-    "sqlite3": "^5.0.2",
     "validator": "^13.7.0",
     "ws": "^8.5.0"
   },
