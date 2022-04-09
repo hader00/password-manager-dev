@@ -29,6 +29,7 @@ export class PasswordListView extends PasswordListViewController {
             locationError: "",
             localMode: false,
             selectFolderLoaded: false,
+            loaded: false,
             timer: null,
             fetchTimer: null
         }
@@ -40,7 +41,6 @@ export class PasswordListView extends PasswordListViewController {
         this.waitForNewItem();
         this.waitForExportItems();
         this.getMode();
-        this.selectFolder();
         this.waitForAccountFromElectron();
         this.autoLogOut().then(r => {
             return r
@@ -86,7 +86,6 @@ export class PasswordListView extends PasswordListViewController {
         if (prevState.searchInput !== this.state.searchInput) {
             this.searchItems(this.state.searchInput);
         }
-        this.selectFolder();
     }
 
     exportItems = () => {
@@ -115,7 +114,6 @@ export class PasswordListView extends PasswordListViewController {
     searchItems = () => {
         if (this.state.searchInput !== '') {
             const filteredData = this.props.passwords.filter((item) => {
-                // Todo exclude password from values
                 const {password, ...remaining} = item
                 return Object.values(remaining).join('').toLowerCase().includes(this.state.searchInput?.toLowerCase())
             })
@@ -217,7 +215,7 @@ export class PasswordListView extends PasswordListViewController {
                                         )
                                     })
                                 ) : (
-                                    this.props.passwords?.length >= 1 ? (
+                                    this.state.searchInput === "" && this.props.passwords?.length >= 1 ? (
                                         this.props.passwords?.map((password) => {
                                             return (
                                                 <PasswordItem
@@ -262,7 +260,11 @@ export class PasswordListView extends PasswordListViewController {
                                     component="label"
                                 >
                                     {this.state.location === "" ? "Select Folder" : "Change"}
-                                    <input id="hiddenField" type="file" name={"user-file-location"} hidden/>
+                                    <input id="hiddenField" type="file" name={"user-file-location"} hidden onClick={() =>{
+                                        window.electron.selectFolder().then((result) => {
+                                            this.setState({location: result.selectedFolder})
+                                        });
+                                    }}/>
                                 </Button>
                                 <label style={{color: "gray", paddingLeft: "10px"}}>{this.state.location}</label>
                                 <label style={{

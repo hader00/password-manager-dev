@@ -2,6 +2,14 @@ import {Component} from "react";
 import ViewType from "./shared/other/ViewType";
 
 class LocalLoginViewController extends Component {
+    getDatabase = () => {
+        window.electron.getDatabase().then((result) => {
+            if (result.database !== "" && result.database !== null) {
+                this.setState({location: result.database})
+                this.setState({checked: true})
+            }
+        })
+    }
     selectFile = () => {
         document.getElementById('hiddenField').addEventListener('click', (e) => {
             e.preventDefault();
@@ -103,7 +111,6 @@ class DefaultLoginViewController extends Component {
 
     getServer = () => {
         window.electron.getServer().then(async (result) => {
-            console.log("result.server", result.server)
             this.setState({server: result.server === "null" && result.server === null ? "" : result.server})
             this.setState({checked: result.server !== "null" && result.server !== null && result.server !== ""})
             await this.checkServer(result.server)
@@ -223,14 +230,16 @@ class RegistrationViewController extends Component {
 }
 
 class PasswordListViewController extends Component {
+
     selectFolder = () => {
         let element = document.getElementById('hiddenField')
-        if (element !== null) {
+        if (element !== null && this.state.loaded === false) {
+            this.setState({loaded: true})
             element.addEventListener('click', (e) => {
                 e.preventDefault();
                 window.electron.selectFolder().then((result) => {
                     this.setState({location: result.selectedFolder})
-                });
+                },{once: true});
             })
         }
     }

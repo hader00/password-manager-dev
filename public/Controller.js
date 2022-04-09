@@ -31,13 +31,12 @@ class Controller {
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
         this.extensionState = null;
-        this.extensionIsLogin = false;
-        this.electronTriedLogout = false;
 
         if (!this.electronStore.has("defaultView")) {
             this.isFirstLogin = true;
             this.electronStore.set("defaultView", VIEW_TYPE.defaultLoginView);
-        } else {
+        }
+        if (this.electronStore.has("customDatabaseLocation")) {
             this.customDatabaseLocation = this.electronStore.get("customDatabaseLocation");
         }
     }
@@ -106,6 +105,8 @@ class Controller {
         const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, stretchedEmail, 32)
         // create Password Key (Master Key)
         const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, stretchedEmail, 100000)
+        // create Master Password Hash (Master Password Hash)
+        const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
 
         // create Encryption Key (Stretched Master Key)
         const encryptionKey = await Crypto.getHKDF(passwordKey, stretchedEmail, 32)
@@ -116,8 +117,6 @@ class Controller {
         // encrypt Symmetric Key
         let {encryptedData} = Crypto.encrypt(symmetricKey, iv, encryptionKey)
         const encryptedSymmetricKey = encryptedData
-        // create Master Password Hash (Master Password Hash)
-        const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
 
         const currentServer = this.getServer(server)
 
@@ -152,38 +151,33 @@ class Controller {
 
     async fetchPasswords() {
         let decryptedFetchedPasswords = []
-        const symmetricKey = this.symmetricKey
+        let fetchedPasswords
         if (this.loginMode === DBModeEnum.local) {
             let msg = "SELECT * FROM Passwords";
-            let fetchedPasswords = await this.databaseConnector.sendMessage(msg)
+            fetchedPasswords = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
                     if (result.response === true) {
                         return result.result
                     }
+                }).catch(function (error) {
+                    return []
                 });
-            fetchedPasswords.forEach(pasword => {
-                let item = JSON.parse(Crypto.decryptPassword(pasword['item'], symmetricKey))
-                item['id'] = pasword['id'];
-                decryptedFetchedPasswords.push(item)
-            })
         } else {
-            let that = this
-            let fetchedPasswords = await axios.post(`${this.server}/api/password-manager/password-fetch`, {
+            fetchedPasswords = await axios.post(`${this.server}/api/password-manager/password-fetch`, {
                 userID: this.userID,
             })
                 .then(function (response) {
                     return response.data
                 })
                 .catch(function (error) {
-                    console.log(error);
-                    return undefined
+                    return []
                 });
-            fetchedPasswords.forEach(pasword => {
-                let item = JSON.parse(Crypto.decryptPassword(pasword['item'].toString(), symmetricKey))
-                item['id'] = pasword['id'];
-                decryptedFetchedPasswords.push(item)
-            })
         }
+        fetchedPasswords.forEach(password => {
+            let item = JSON.parse(Crypto.decryptPassword(password['item'], this.symmetricKey))
+            item['id'] = password['id'];
+            decryptedFetchedPasswords.push(item)
+        })
         return decryptedFetchedPasswords
 
     }
@@ -377,7 +371,6 @@ class Controller {
     }
 
     async localRegistration(password, location) {
-        console.log("password, location", password, location)
         if (isEmpty(location)) {
             location = DEFAULT_LOCAL_DB_LOCATION;
         } else {
@@ -389,7 +382,6 @@ class Controller {
             this.electronStore.set("defaultView", VIEW_TYPE.localLoginView)
             this.electronStore.set("customDatabaseLocation", location)
         }
-        console.log("localRegistrationResult", localRegistrationResult)
         if (localRegistrationResult === true) {
             // normalize master password
             const normalizedMasterPassword = password.normalize('NFKD')
@@ -532,7 +524,11 @@ class Controller {
         return this.databaseConnector
     }
 
-    logoutImmediate(caller) {
+    getDatabase() {
+        return this.customDatabaseLocation
+    }
+
+    logoutImmediate() {
         this.loginMode = null;
         this.server = null;
         this.userID = null;
@@ -541,8 +537,6 @@ class Controller {
         this.customDatabaseLocation = null;
         this.extensionState = null;
         this.server = null;
-        this.extensionIsLogin = false;
-        this.electronTriedLogout = false;
     }
 
 }

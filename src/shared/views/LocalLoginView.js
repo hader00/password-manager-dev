@@ -172,6 +172,7 @@ class LocalLoginView extends LocalLoginViewController {
 
     componentDidMount() {
         this.selectFile();
+        this.getDatabase();
     }
 
     onChange = (e) => {

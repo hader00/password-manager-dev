@@ -91,7 +91,7 @@ class ElectronController {
                                 {
                                     label: 'Learn more',
                                     click: () => {
-                                        shell.openExternal('https://github.com/')
+                                        shell.openExternal('https://github.com/hader00/password-manager-dev')
                                     }
                                 }
                             ]
@@ -154,6 +154,10 @@ class ElectronController {
                     const email = await this.controller.getEmail()
                     e.sender.send('email:response', {email: email});
                 });
+                ipcMain.on('database:get', async (e) => {
+                    const database = await this.controller.getDatabase()
+                    e.sender.send('database:response', {database: database});
+                });
                 ipcMain.on('server:check', async (e, server) => {
                     const serverCheck = await this.controller.isServerValid(server)
                     e.sender.send('server:response', {serverCheck: serverCheck});
@@ -194,7 +198,6 @@ class ElectronController {
                 });
                 // Remote Login
                 ipcMain.on('remoteLogin:login', (e, server, email, password, saveEmail) => {
-                    // todo add custom server
                     this.controller.remoteLogin(server, email, password, saveEmail).then(remoteLoginSuccess => {
                         e.sender.send('remoteLogin:response', {remoteLoginSuccess: remoteLoginSuccess});
                     })
@@ -253,7 +256,7 @@ class ElectronController {
                 });
                 // Set default logout and clipboard timeouts
                 ipcMain.on('logout:set', (e) => {
-                    this.controller.logoutImmediate("electron");
+                    this.controller.logoutImmediate();
                 });
                 // Open browser
                 ipcMain.on("browser:open", (e, url) => {

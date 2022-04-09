@@ -236,6 +236,15 @@ process.once('loaded', () => {
             });
         },
 
+        async getDatabase() {
+            return await new Promise((resolve) => {
+                ipcRenderer.once('database:response', (_, arg) => {
+                    resolve(arg);
+                });
+                ipcRenderer.send('database:get');
+            });
+        },
+
         async getServer() {
             return await new Promise((resolve) => {
                 ipcRenderer.once('server:getResponse', (_, arg) => {

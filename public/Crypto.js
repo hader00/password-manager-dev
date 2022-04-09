@@ -42,9 +42,7 @@ class Crypto {
 
     static encryptPassword(password, key) {
         const iv = Buffer.from(crypto.randomBytes(16));
-        const cipher = crypto.createCipheriv(ALGORITHM,
-            Buffer.from(key, "hex"),
-            iv);
+        const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(key, "hex"), iv);
         const encryptedPassword = Buffer.concat([
             cipher.update(password),
             cipher.final()
@@ -54,9 +52,7 @@ class Crypto {
 
     static decryptPassword(password, key) {
         const iv = Buffer.from(password.slice(0, 32), "hex");
-        const decipher = crypto.createDecipheriv(ALGORITHM,
-            Buffer.from(key, "hex"),
-            iv);
+        const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key, "hex"), iv);
         const decryptedPassword = Buffer.concat([
             decipher.update(Buffer.from(password.slice(32, password.length), "hex")),
             decipher.final()

@@ -17,22 +17,21 @@ export class PasswordField extends PasswordFieldController {
     }
 
     render() {
-        const props = this.props
         return (
             <div style={{marginTop: "10px", display: "flex"}}>
                 <TextField
                     inputProps={{
-                        readOnly: Boolean(props.inputReadOnly),
-                        disabled: Boolean(props.inputReadOnly),
+                        readOnly: Boolean(this.props.inputReadOnly),
+                        disabled: Boolean(this.props.inputReadOnly),
                     }}
-                    value={props.value || ''}
+                    value={this.props.value || ''}
                     style={{display: "flex", width: "70vw"}}
                     type={this.state.type}
-                    label={props.placeholder}
-                    name={props.name} id={props.id} onChange={props.onChange}/>
+                    label={this.props.placeholder}
+                    name={this.props.name} id={this.props.id} onChange={this.props.onChange}/>
                 {(this.state.type === "password") ?
                     <>
-                        {props.value?.length > 0 ?
+                        {this.props.value?.length > 0 ?
                             <Button
                                 style={{paddingBottom: "15px", paddingTop: "15px"}}
                                 variant=""
@@ -44,13 +43,13 @@ export class PasswordField extends PasswordFieldController {
                             :
                             <></>
                         }
-                        {props.value?.length > 0 ?
+                        {this.props.value?.length > 0 ?
                             <Button
                                 style={{paddingBottom: "15px", paddingTop: "15px"}}
                                 variant=""
                                 onClick={async (e) => {
                                     e.preventDefault();
-                                    await this.copy(props.value);
+                                    await this.copy(this.props.value);
                                 }}>
                                 <FileCopyIcon/></Button>
                             :
@@ -61,10 +60,10 @@ export class PasswordField extends PasswordFieldController {
                             :
                             <Button
                                 style={{paddingBottom: "15px", paddingTop: "15px", boxShadow: "none"}}
-                                variant={props.showingGenerator === true ? "contained" : ""}
+                                variant={this.props.showingGenerator === true ? "contained" : ""}
                                 onClick={async (e) => {
                                     e.preventDefault();
-                                    props.togglePasswordGenerator();
+                                    this.props.togglePasswordGenerator();
                                 }}>
                                 <SettingsIcon/></Button>
                         }
@@ -84,7 +83,7 @@ export class PasswordField extends PasswordFieldController {
                             variant=""
                             onClick={async (e) => {
                                 e.preventDefault();
-                                await this.copy(props.value);
+                                await this.copy(this.props.value);
                             }}>
                             <FileCopyIcon/></Button>
                         {(this.props.inputReadOnly === true) ?
@@ -95,7 +94,7 @@ export class PasswordField extends PasswordFieldController {
                                 variant=""
                                 onClick={async (e) => {
                                     e.preventDefault();
-                                    props.togglePasswordGenerator();
+                                    this.props.togglePasswordGenerator();
                                 }}>
                                 <SettingsIcon/></Button>
                         }
@@ -126,18 +125,6 @@ export class PasswordField extends PasswordFieldController {
         window.addEventListener('focus', async function () {
             await navigator.clipboard.writeText("");
         },{once : true})
-    }
-
-    async componentDidMount() {
-        const props = this.props
-        let inputField = document.getElementById(props.id)
-
-        if (props.inputRequired) {
-            inputField.setAttribute("required", props.inputRequired)
-        }
-        if (props.inputReadOnly) {
-            inputField.setAttribute("readOnly", props.inputReadOnly)
-        }
     }
 }
 

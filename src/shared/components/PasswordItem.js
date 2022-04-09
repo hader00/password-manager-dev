@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types';
 import appLogo from '../logo.svg';
-import ImageWithDefault from "./ImageWithDefault";
 import {Box, Button, Divider, Grid} from "@material-ui/core";
 
 
@@ -19,13 +18,19 @@ export class PasswordItem extends Component {
                 <Box style={{paddingTop: "10px", paddingBottom: "10px", height: "60px", alignItems: "center"}}>
                     <Grid container style={{display: "flex", marginBottom: "10px", marginTop: "10px"}}>
                         <Grid item xs style={{display: "flex"}}>
-                            <ImageWithDefault default={appLogo} src={this.state.url}
-                                              style={{
-                                                  paddingTop: "5px",
-                                                  width: "30px",
-                                                  height: "30px",
-                                                  display: "flex"
-                                              }}/>
+                            <img
+                                style={{
+                                    paddingTop: "5px",
+                                    width: "30px",
+                                    height: "30px",
+                                    display: "flex"
+                                }}
+                                src={this.state.url}
+                                onError={({currentTarget}) => {
+                                    currentTarget.onerror = null; // prevents looping
+                                    currentTarget.src = appLogo;
+                                }}
+                                alt={""}/>
                         </Grid>
                         <Grid item xs={10} style={{lineHeight: "0.1", marginTop: "-1vh"}}>
                             <p><b>{this.props.password.title}</b></p>

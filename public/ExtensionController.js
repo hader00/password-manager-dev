@@ -1,5 +1,4 @@
 const WebSocket = require('ws');
-const {ipcMain} = require("electron");
 
 class ExtensionController {
     constructor(controller) {
@@ -10,12 +9,6 @@ class ExtensionController {
         this.sockets = [];
         //
         this.init();
-    }
-
-    logout() {
-        if (this.sockets !== []) {
-            this.sockets.forEach(s => s.send(JSON.stringify({channel: 'logout:force'})));
-        }
     }
 
     init() {
@@ -111,7 +104,7 @@ class ExtensionController {
                         that.controller.extensionLogin();
                         break;
                     case "extension:logout":
-                        this.controller.logoutImmediate("extension");
+                        that.controller.logoutImmediate();
                         break;
                     default:
                         break;
