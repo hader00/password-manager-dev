@@ -54,14 +54,12 @@ Create installation package project for Linux to the **dist** folder: `yarn dist
 
 ## Node dependencies update
 
-Install npm-check-updates: `npm install -g npm-check-updates`
+Install npm-check-updates: `npm install -g npm-check-updates`, if not installed
 
 Display new dependencies: `ncu`
 
 Upgrade all versions in package.json: `ncu -u`
 
-Download new versions in package.json: `npm update`
-
-Install new versions in package.json: `npm install`
+Install new versions in package.json: `yarn install`
 
 After dependencies update you may need to use `electron-rebuild -f` to rebuild electron packages if you face errors after update.
