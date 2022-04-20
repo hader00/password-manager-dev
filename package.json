@@ -1,10 +1,10 @@
 {
   "name": "simple-password-manager-app",
   "productName": "Simple Password Manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
-  "author": "Martin Haderka",
-  "description": "Description",
+  "author": "Martin Haderka <xhader00@stud.fit.vutbr.cz>",
+  "description": "Simple cloud and local based Password Manager.",
   "license": "MIT",
   "main": "./public/electron.js",
   "homepage": "./",
@@ -19,22 +19,58 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "target": "dmg",
+      "darkModeSupport": false,
+      "target": [
+        "dmg"
+      ],
       "publish": [
         "github"
       ]
     },
+    "dmg": {
+      "background": null,
+      "backgroundColor": "#ffffff",
+      "window": {
+        "width": "400",
+        "height": "400"
+      },
+      "contents": [
+        {
+          "x": 100,
+          "y": 100
+        },
+        {
+          "x": 200,
+          "y": 100,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
     "linux": {
-      "category": "Network",
+      "category": "Utility",
+      "synopsis": "Simple Password Manager.",
+      "desktop": {
+        "Name": "Simple Password Manager",
+        "Type": "Application",
+        "GenericName": "Password Manager"
+      },
+      "target": [
+        "deb",
+        "freebsd",
+        "rpm",
+        "AppImage",
+        "snap"
+      ],
       "publish": [
         "github"
       ]
     },
     "win": {
+      "publisherName": "Martin Haderka",
       "publish": [
         "github"
-      ],
-      "publisherName": "Martin Haderka"
+      ]
     }
   },
   "dependencies": {
@@ -43,8 +79,6 @@
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@vscode/sqlite3": "^5.0.8",
     "axios": "^0.26.1",
-    "crypto-js": "^4.1.1",
-    "electron-cookies": "^1.1.0",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.0.1",
     "electron-window-state": "^5.0.3",
@@ -54,27 +88,33 @@
   },
   "scripts": {
     "start": "concurrently \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\"",
-    "build": "react-scripts build",
+    "build": "rm -fr ./build/* && react-scripts build && cp -R ./icons/* ./build",
     "eject": "react-scripts eject",
-    "dist": "yarn build && electron-builder -mwl",
-    "dist-mac": "yarn build && electron-builder -m",
-    "dist-win": "yarn build && electron-builder -w",
-    "dist-linux": "yarn build && electron-builder -l",
+    "pack-all": "rm -fr ./dist/* && yarn build && yarn pack-win && yarn pack-linux && yarn pack-mac && yarn pack-macARM",
+    "pack-win": "electron-builder --win -p never",
+    "pack-linux": "electron-builder --linux --x64 -p never",
+    "pack-mac": "electron-builder --mac -p never",
+    "pack-macARM": "electron-builder --mac --arm64 -p never",
+    "dist": "rm -fr ./dist/* && yarn build && yarn dist-win && yarn dist-linux && yarn dist-mac && yarn dist-macARM",
+    "dist-win": "electron-builder --win -p 'onTagOrDraft'",
+    "dist-linux": "electron-builder --linux --x64 -p 'onTagOrDraft'",
+    "dist-mac": "electron-builder --mac -p 'onTagOrDraft'",
+    "dist-macARM": "electron-builder --mac --arm64 -p 'onTagOrDraft'",
     "rebuild-electron": "electron-builder install-app-deps",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
-    "electron": "^18.0.3",
-    "electron-builder": "^23.0.2",
-    "electron-rebuild": "^3.2.7",
+    "electron": "^18.0.4",
+    "electron-builder": "^23.0.3",
     "node-gyp": "^9.0.0",
     "prop-types": "^15.8.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-scripts": "^5.0.0",
-    "wait-on": "^6.0.1"
+    "react-scripts": "^5.0.1",
+    "wait-on": "^6.0.1",
+    "eslint-config-react-app": "^7.0.1"
   },
   "eslintConfig": {
     "extends": [
