@@ -176,7 +176,7 @@ class ElectronWindowBuilder {
             }
         })
         // Load the index.html, or an url in dev mode
-        await this.win.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
+        await this.win.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../../build/index.html')}`);
         //
         this.win.on('closed', () => this.win = null);
         // Open the DevTools.

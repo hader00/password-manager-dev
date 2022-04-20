@@ -49,19 +49,6 @@
     },
     "linux": {
       "category": "Utility",
-      "synopsis": "Simple Password Manager.",
-      "desktop": {
-        "Name": "Simple Password Manager",
-        "Type": "Application",
-        "GenericName": "Password Manager"
-      },
-      "target": [
-        "deb",
-        "freebsd",
-        "rpm",
-        "AppImage",
-        "snap"
-      ],
       "publish": [
         "github"
       ]
@@ -77,12 +64,12 @@
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.61",
-    "@vscode/sqlite3": "^5.0.8",
     "axios": "^0.26.1",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.0.1",
     "electron-window-state": "^5.0.3",
     "js-crypto-hkdf": "^1.0.4",
+    "sqlite3": "5.0.2",
     "validator": "^13.7.0",
     "ws": "^8.5.0"
   },
@@ -92,7 +79,7 @@
     "eject": "react-scripts eject",
     "pack-all": "rm -fr ./dist/* && yarn build && yarn pack-win && yarn pack-linux && yarn pack-mac && yarn pack-macARM",
     "pack-win": "electron-builder --win -p never",
-    "pack-linux": "electron-builder --linux --x64 -p never",
+    "pack-linux": "electron-builder --linux -p never",
     "pack-mac": "electron-builder --mac -p never",
     "pack-macARM": "electron-builder --mac --arm64 -p never",
     "dist": "rm -fr ./dist/* && yarn build && yarn dist-win && yarn dist-linux && yarn dist-mac && yarn dist-macARM",
@@ -100,21 +87,21 @@
     "dist-linux": "electron-builder --linux --x64 -p 'onTagOrDraft'",
     "dist-mac": "electron-builder --mac -p 'onTagOrDraft'",
     "dist-macARM": "electron-builder --mac --arm64 -p 'onTagOrDraft'",
-    "rebuild-electron": "electron-builder install-app-deps",
+    "rebuild": "electron-rebuild -f -w sqlite3",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
-    "electron": "^18.0.4",
-    "electron-builder": "^23.0.3",
+    "electron": "18.0.4",
+    "electron-builder": "23.0.3",
+    "electron-rebuild": "3.2.7",
     "node-gyp": "^9.0.0",
     "prop-types": "^15.8.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-scripts": "^5.0.1",
-    "wait-on": "^6.0.1",
-    "eslint-config-react-app": "^7.0.1"
+    "wait-on": "^6.0.1"
   },
   "eslintConfig": {
     "extends": [
