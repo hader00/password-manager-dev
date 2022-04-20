@@ -1,22 +1,29 @@
 const crypto = require('crypto');
 const hkdf = require('js-crypto-hkdf');
-const {SHA512, ALGORITHM} = require("./Util");
+const {HKDF_SHA512, SHA512, ALGORITHM} = require("./Utils/PMUtils");
 
+/**
+ * Crypto object that handles cryptography operations of the application
+ */
 class Crypto {
+    //
     static getPBKDF2(password, salt, iterationsCount) {
         const derivedKey = crypto.pbkdf2Sync(password, salt, iterationsCount, 32, SHA512);
         return derivedKey.toString('hex')
     }
 
-    static async getHKDF(password, salt, keyLen) {
-        let key = await hkdf.compute(password, 'SHA-512', keyLen, 'encryptionKeyInfo', salt)
+    //
+    static async getHKDF(password, salt, keyLen, info) {
+        let key = await hkdf.compute(password, HKDF_SHA512, keyLen, info, salt)
             .then((derivedKey) => {
                 return derivedKey.key.buffer
             });
         return Buffer.from(key).toString('hex');
     }
 
-    static encrypt(data, iv, key) {
+    //
+    static encrypt(data, key) {
+        const iv = crypto.randomBytes(16).toString('hex');
         const cipher = crypto.createCipheriv(ALGORITHM,
             Buffer.from(key, "hex"),
             Buffer.from(iv, "hex")
@@ -25,9 +32,10 @@ class Crypto {
             cipher.update(data),
             cipher.final()
         ]);
-        return {encryptedData: encrypted.toString('hex')}
+        return {iv: iv, encryptedData: encrypted.toString('hex')}
     };
 
+    //
     static decrypt(encryptedData, iv, key) {
         const decipher = crypto.createDecipheriv(ALGORITHM,
             Buffer.from(key, "hex"),
@@ -38,26 +46,6 @@ class Crypto {
             decipher.final()
         ]);
         return {decryptedData: decrypted.toString()};
-    };
-
-    static encryptPassword(password, key) {
-        const iv = Buffer.from(crypto.randomBytes(16));
-        const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(key, "hex"), iv);
-        const encryptedPassword = Buffer.concat([
-            cipher.update(password),
-            cipher.final()
-        ]);
-        return iv.toString("hex").concat(encryptedPassword.toString("hex"));
-    };
-
-    static decryptPassword(password, key) {
-        const iv = Buffer.from(password.slice(0, 32), "hex");
-        const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key, "hex"), iv);
-        const decryptedPassword = Buffer.concat([
-            decipher.update(Buffer.from(password.slice(32, password.length), "hex")),
-            decipher.final()
-        ]);
-        return decryptedPassword.toString();
     };
 }
 

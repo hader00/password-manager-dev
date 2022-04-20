@@ -1,5 +1,10 @@
 const Store = require('electron-store')
 
+/**
+ * ElectronStore class stores and provides persistent local application data
+ *
+ * @return object of ElectronStore
+ */
 class ElectronStore {
     constructor() {
         const schema = {
@@ -8,7 +13,7 @@ class ElectronStore {
             },
             userEmail: {
                 type: 'string',
-                format: 'email'
+                format: 'email',
             },
             storedServer: {
                 type: 'string',
@@ -27,12 +32,13 @@ class ElectronStore {
         this.store = new Store({schema});
     }
 
+
     get(key) {
-        return this.store.get(key)
+        return this.store.get(key);
     }
 
     set(key, value) {
-        return this.store.set(key, value)
+        return this.store.set(key, value);
     }
 
     has(key) {

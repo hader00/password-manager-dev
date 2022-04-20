@@ -1,9 +1,11 @@
-const {Controller} = require("./Controller.js");
-const {ElectronController} = require("./ElectronController.js");
-const {ExtensionController} = require("./ExtensionController.js")
+const {Controller} = require("./Controllers/Controller.js");
+const {ElectronController} = require("./Controllers/ElectronController.js");
+const {ExtensionController} = require("./Controllers/ExtensionController.js")
+const {ElectronWindowBuilder} = require("./Controllers/ElectronWindowBuilder");
 
 const controller = new Controller()
-new ElectronController(controller);
+let win = new ElectronWindowBuilder(controller)
+new ElectronController(controller, win);
 new ExtensionController(controller);
 
 

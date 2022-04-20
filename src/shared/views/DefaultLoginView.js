@@ -201,10 +201,6 @@ class DefaultLoginView extends DefaultLoginViewController {
         }
     }
 
-    handleLocalLoginViewChange = () => {
-        this.dbExists();
-    }
-
     submitLogin = async (e) => {
         e.preventDefault()
         if (this.state.checked && this.state.server === "") {

@@ -74,16 +74,6 @@ class DefaultLoginViewController extends Component {
         return await window.electron.checkServerAvailability(server)
     }
     //
-    dbExists = async () => {
-        await window.electron.dbExists().then((result) => {
-            if (result.dbExists === true) {
-                this.popAndChangeView(ViewType.localLoginView);
-            } else {
-                this.popAndChangeView(ViewType.localRegistrationView);
-            }
-        });
-    }
-    //
     submitSubmitLogin = (userServer, userEmail, userPassword, saveEmail) => {
         window.electron.submitLogin(userServer, userEmail, userPassword, saveEmail).then((result) => {
             if (result.remoteLoginSuccess === true) {
@@ -239,7 +229,7 @@ class PasswordListViewController extends Component {
                 e.preventDefault();
                 window.electron.selectFolder().then((result) => {
                     this.setState({location: result.selectedFolder})
-                },{once: true});
+                }, {once: true});
             })
         }
     }
@@ -249,6 +239,9 @@ class PasswordListViewController extends Component {
     }
 
     logoutImmediate = () => {
+        this.props.clearAppState()
+        this.setState({timer: null})
+        this.setState({fetchTimer: null})
         return window.electron.logoutImmediate()
     }
 }

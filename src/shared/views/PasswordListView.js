@@ -13,7 +13,6 @@ export class PasswordListView extends PasswordListViewController {
     constructor(props) {
         super(props);
         this.state = {
-            message: 'SELECT * FROM Passwords',
             searchInput: '',
             activePasswordID: 0,
             inputReadOnly: false,
@@ -53,6 +52,9 @@ export class PasswordListView extends PasswordListViewController {
     waitForAccountFromElectron = () => {
         this.waitForAccount().then((result) => {
             clearTimeout(this.state.timer)
+            this.setState({timer: null})
+            clearTimeout(this.state.fetchTimer)
+            this.setState({fetchTimer: null})
             this.props.changeParentsActiveView(ViewType.accountView)
         })
     }
@@ -163,9 +165,11 @@ export class PasswordListView extends PasswordListViewController {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
             if (this.state.timer !== null) {
                 clearTimeout(this.state.timer)
+                this.setState({timer: null})
             }
             if (this.state.fetchTimer !== null) {
                 clearTimeout(this.state.fetchTimer)
+                this.setState({fetchTimer: null})
             }
             this.props.setPasswordItem(
                 {
@@ -260,11 +264,12 @@ export class PasswordListView extends PasswordListViewController {
                                     component="label"
                                 >
                                     {this.state.location === "" ? "Select Folder" : "Change"}
-                                    <input id="hiddenField" type="file" name={"user-file-location"} hidden onClick={() =>{
-                                        window.electron.selectFolder().then((result) => {
-                                            this.setState({location: result.selectedFolder})
-                                        });
-                                    }}/>
+                                    <input id="hiddenField" type="file" name={"user-file-location"} hidden
+                                           onClick={() => {
+                                               window.electron.selectFolder().then((result) => {
+                                                   this.setState({location: result.selectedFolder})
+                                               });
+                                           }}/>
                                 </Button>
                                 <label style={{color: "gray", paddingLeft: "10px"}}>{this.state.location}</label>
                                 <label style={{

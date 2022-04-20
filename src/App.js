@@ -45,7 +45,9 @@ class App extends Component {
                                            filteredPasswords={this.state.filteredPasswords}
                                            setFilteredPasswords={this.setFilteredPasswords}
                                            setPasswordItem={this.setPasswordItem}
-                                           fetchAllPasswords={this.fetchAllPasswords}/>
+                                           fetchAllPasswords={this.fetchAllPasswords}
+                                           clearAppState={this.clearAppState}
+                        />
                         <PasswordItemView
                             componentName={ViewType.passwordItem}
                             changeParentsActiveView={this.changeActiveView}
@@ -86,6 +88,14 @@ class App extends Component {
 
     setPasswordItem = (newPasswordItem) => {
         this.setState({passwordItem: newPasswordItem});
+    }
+
+    clearAppState = () => {
+        this.setState({activeView: null})
+        this.setState({passwords: []})
+        this.setState({filteredPasswords: []})
+        this.setState({passwordItem: {}})
+        this.setState({defaultView: null})
     }
 }
 

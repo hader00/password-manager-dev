@@ -56,15 +56,15 @@ class LocalRegistrationView extends LocalRegistrationViewController {
                     <div style={{display: "flex", margin: 0}}>
                         <TextField style={{width: "95vw"}} type={this.state.passwordType} label="Enter Password"
                                    id="password" name="password" onChange={(e) => {
-                                       this.onChange(e)
-                                if (this.checkPassword(e.target.value)) {
-                                    this.setState({passwordError: true})
-                                    this.setState({passwordHelperText: "Password must be at least 8 charters long and contain one number, one lowercase, one uppercase and one special character (!\"#$%'()*+,-./:;<=>?@[\\]^_`{|}~)!"})
-                                } else {
-                                    this.setState({passwordError: false})
-                                    this.setState({passwordHelperText: ""})
-                                }
-                            }}
+                            this.onChange(e)
+                            if (this.checkPassword(e.target.value)) {
+                                this.setState({passwordError: true})
+                                this.setState({passwordHelperText: "Password must be at least 8 charters long and contain one number, one lowercase, one uppercase and one special character (!\"#$%'()*+,-./:;<=>?@[\\]^_`{|}~)!"})
+                            } else {
+                                this.setState({passwordError: false})
+                                this.setState({passwordHelperText: ""})
+                            }
+                        }}
                                    value={this.state.password} error={this.state.passwordError}
                                    helperText={this.state.passwordHelperText}/>
                         {(this.state.password?.length > 0) ?

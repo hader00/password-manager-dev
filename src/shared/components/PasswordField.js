@@ -124,7 +124,7 @@ export class PasswordField extends PasswordFieldController {
     clearClipboardOnFocus = () => {
         window.addEventListener('focus', async function () {
             await navigator.clipboard.writeText("");
-        },{once : true})
+        }, {once: true})
     }
 }
 
