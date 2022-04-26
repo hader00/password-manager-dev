@@ -86,6 +86,12 @@ class ElectronWindowBuilder {
                                     this.win.webContents.send(ChannelUtils.MENU_ACCOUNT_CALL, true)
                                 },
                             },
+                            {
+                                label: 'Clear app data',
+                                click: () => {
+                                    this.clearAppData()
+                                },
+                            },
                             {type: 'separator'},
                             {
                                 label: 'Logout',
@@ -133,13 +139,17 @@ class ElectronWindowBuilder {
                 resolve();
             });
             // Quit when the window is closed
-            app.on('window-all-closed', () => {
+            app.on('window-all-closed', async () => {
                 // todo encrypt database after app close or after certain time, call from sm else
                 if (this.controller.getLoginMode() === DBModeEnum.local) {
                     this.controller.databaseConnector.closeDatabase();
                 }
                 // logout user if window is closed
                 this.controller.logoutImmediate();
+                const ses = this.win.webContents?.session;
+                if (ses !== null) {
+                    await ses.clearCache();
+                }
                 app.quit();
             })
             // Regenerate window
@@ -151,6 +161,20 @@ class ElectronWindowBuilder {
                 }
             })
         });
+    }
+
+    // Clear application data stored in Electron Store
+    async clearAppData() {
+        // Get saved application
+        this.controller.clearElectronStoreData()
+        // Clear session cache
+        const ses = this.win.webContents?.session;
+        if (ses !== null) {
+            await ses.clearCache();
+        }
+        // Relaunch Electron
+        app.relaunch();
+        app.exit();
     }
 
     //

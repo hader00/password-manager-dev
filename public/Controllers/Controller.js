@@ -633,6 +633,16 @@ class Controller {
         return this.loginMode
     }
 
+    // Remove electron store data
+    clearElectronStoreData() {
+        this.electronStore.set(PMUtils.DEFAULT_VIEW, null)
+        this.electronStore.set(PMUtils.STORED_EMAIL, "")
+        this.electronStore.set(PMUtils.STORED_SERVER, "")
+        this.electronStore.set(PMUtils.CLEAR_TIMEOUT, "10")
+        this.electronStore.set(PMUtils.LOGOUT_TIMEOUT, "5")
+        this.electronStore.set(PMUtils.CUSTOM_DB_LOC, null)
+    }
+
     // Logout and clean data saved by application
     logoutImmediate() {
         this.loginMode = null;
