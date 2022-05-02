@@ -7,6 +7,7 @@ const {DatabaseConnector} = require("../src/DatabaseConnector");
 const PMUtils = require("../src/Utils/PMUtils");
 const {PasswordGenerator} = require("../src/PasswordGenerator");
 const axios = require('axios');
+const {dialog, Menu} = require("electron");
 
 /**
  * Controller object that describes functionally for electron and extension
@@ -25,6 +26,10 @@ class Controller {
         this.passwordKey = null;
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
+        this.win = null;
+        this.timer = null;
+        this.extensionLogoutFunc = null;
+        this.extensionLoginFunc = null;
 
         if (!this.electronStore.has(PMUtils.DEFAULT_VIEW)) {
             this.electronStore.set(PMUtils.DEFAULT_VIEW, PMUtils.VIEW_TYPE.defaultLoginView);
@@ -78,11 +83,16 @@ class Controller {
             .then(async function (response) {
                 if (response?.data?.success === true) {
                     that.setLoginData(currentServer, response.data.id, passwordKey, symmetricKey, PMUtils.DBModeEnum.remote, email);
+                    that.enableMenuItems(true)
+                    if (typeof that.extensionLoginFunc !== "undefined") {
+                        that.extensionLoginFunc()
+                    }
                     return true;
                 }
                 return false;
             })
             .catch(function (error) {
+                console.log(error)
                 console.log(PMUtils.REGISTRATION_ERR, error.data)
                 return false;
             })
@@ -123,6 +133,10 @@ class Controller {
                 if (response?.data?.success === true) {
                     const {decryptedData} = Crypto.decrypt(response.data.encryptedSymmetricKey, response.data.iv, encryptionKey)
                     that.setLoginData(currentServer, response.data.id, passwordKey, decryptedData, PMUtils.DBModeEnum.remote, email);
+                    that.enableMenuItems(true)
+                    if (typeof that.extensionLoginFunc === 'function') {
+                        that.extensionLoginFunc()
+                    }
                     return true;
                 }
                 return false;
@@ -138,12 +152,12 @@ class Controller {
      * This function does following steps:
      * 1) Check location (use default if custom is null)
      * 2) Create database, setup tables in database
-     * 1.1) Use PMUtils.LOCAL_SECRET as salt
+     * 1.1) Use random 16 bytes as salt
      * 1.2) Normalize masterPassword to NFKD
      * 1.3) Generate 'stretchedMasterPassword' with HKDF, from normalized masterPassword
      * 1.4) Generate 'passwordKey' with PBKDF2, hash of stretchedMasterPassword, from which other hashes will be generated
      * 1.5) Generate 'masterPasswordHash' with PBKDF2, will be sent to server and later used for authentication
-     * 1.6) Generate 'encryptionKey' with PBKDF2, will used for database encryption/decryption
+     * 1.6) Generate 'encryptionKey' with PBKDF2, will be used for database encryption/decryption
      * 3) Set authentication data to the database
      * 4) Save required data
      *
@@ -158,16 +172,24 @@ class Controller {
         } else {
             location = path.resolve(location, PMUtils.DATABASE_FILENAME)
         }
+        if (fs.existsSync(location)) {
+            return false
+        }
         const databaseCreated = await this.databaseConnector.createDatabase(location);
         if (databaseCreated === true) {
-            const {passwordKey, masterPasswordHash, encryptionKey} = await this.computeSecurityKeys("", password);
-            let msg = `INSERT INTO Validation (item) VALUES ('${masterPasswordHash}');`
+            const salt = crypto.randomBytes(16).toString('hex');
+            const {passwordKey, masterPasswordHash, encryptionKey} = await this.computeSecurityKeys(salt, password);
+            let msg = `INSERT INTO Validation (item, salt) VALUES ('${masterPasswordHash}', '${salt}');`
             await this.databaseConnector.sendMessage(msg)
                 .then(result => {
                     return result.response
                 });
             this.setLoginData(null, null, passwordKey, encryptionKey, PMUtils.DBModeEnum.local, location)
+            if (typeof this.extensionLoginFunc === 'function') {
+                this.extensionLoginFunc()
+            }
         }
+        this.enableMenuItems(databaseCreated)
         return databaseCreated
     }
 
@@ -176,12 +198,12 @@ class Controller {
     * This function does following steps:
     * 1) Check location (use default if custom is null)
     * 2) Open database
-    * 1.1) Use PMUtils.LOCAL_SECRET as salt
+    * 1.1) Get salt from DB
     * 1.2) Normalize masterPassword to NFKD
     * 1.3) Generate 'stretchedMasterPassword' with HKDF, from normalized masterPassword
     * 1.4) Generate 'passwordKey' with PBKDF2, hash of stretchedMasterPassword, from which other hashes will be generated
     * 1.5) Generate 'masterPasswordHash' with PBKDF2, will be sent to server and later used for authentication
-    * 1.6) Generate 'encryptionKey' with PBKDF2, will used for database encryption/decryption
+    * 1.6) Generate 'encryptionKey' with PBKDF2, will be used for database encryption/decryption
     * 3) Fetch authentication data from the database and compare
     * 4) Save required data
     *
@@ -194,9 +216,8 @@ class Controller {
         if (PMUtils.isEmpty(location)) {
             location = PMUtils.DEFAULT_LOCAL_DB_LOCATION;
         }
-        let databaseConnected = await this.databaseConnector.openDatabase(location, password);
+        let databaseConnected = await this.databaseConnector.openDatabase(location);
         if (databaseConnected === true) {
-            const {passwordKey, masterPasswordHash, encryptionKey} = await this.computeSecurityKeys("", password);
             let msg = "SELECT * FROM Validation";
             let fetchedValidation = await this.databaseConnector.sendMessage(msg)
                 .then(result => {
@@ -206,13 +227,22 @@ class Controller {
                         return result.response
                     }
                 });
+            const {
+                passwordKey,
+                masterPasswordHash,
+                encryptionKey
+            } = await this.computeSecurityKeys(fetchedValidation['salt'], password);
             // Validate Login
             if (fetchedValidation['item'] === masterPasswordHash) {
                 this.setLoginData(null, null, passwordKey, encryptionKey, PMUtils.DBModeEnum.local, location)
+                if (typeof this.extensionLoginFunc === 'function') {
+                    this.extensionLoginFunc()
+                }
             } else {
                 databaseConnected = false
             }
         }
+        this.enableMenuItems(databaseConnected)
         return databaseConnected;
     }
 
@@ -259,7 +289,7 @@ class Controller {
                     if (result.response === true) {
                         return result.result
                     }
-                }).catch(function (error) {
+                }).catch(function () {
                     return []
                 });
         } else {
@@ -269,7 +299,7 @@ class Controller {
                 .then(function (response) {
                     return response.data
                 })
-                .catch(function (error) {
+                .catch(function () {
                     return []
                 });
         }
@@ -401,7 +431,7 @@ class Controller {
     * 1) This function does check if user's credentials are valid
     * 2) Fetches for all passwords and decrypts them
     * 3) Creates a cvs object
-    * 4) Creates a file in choosen location in format: 'date' + 'time' + '.cvs'
+    * 4) Creates a file in chosen location in format: 'date' + 'time' + '.cvs'
     * 5) Writes all passwords to the cvs file
     *
     * @param  password             String           a master password
@@ -411,26 +441,91 @@ class Controller {
     * @return  status    a state of password export
     */
     async exportPasswords(password, email, location) {
-        let {passwordKey} = this.computeSecurityKeys("", password)
+        let salt;
+        if (this.loginMode === PMUtils.DBModeEnum.local) {
+            let msg = "SELECT * FROM Validation";
+            let fetchedValidation = await this.databaseConnector.sendMessage(msg)
+                .then(result => {
+                    if (result.response === true) {
+                        return result.result[0]
+                    } else {
+                        return result.response
+                    }
+                });
+            salt = fetchedValidation['salt']
+        } else {
+            salt = email
+        }
+        const {passwordKey} = await this.computeSecurityKeys(salt, password)
         if (passwordKey !== this.passwordKey) {
             return false;
         }
         let decryptedPasswords = []
         const fetchedPasswords = await this.fetchPasswords()
         for (const password1 of fetchedPasswords) {
-            if (password1['password'] !== '') {
+            if (!PMUtils.isEmpty(password1['password'])) {
                 password1['password'] = await this.decryptPassword(password1['password'], this.symmetricKey)
+            } else {
+                password1['password'] = ""
+            }
+            if (!password1.hasOwnProperty('description')) {
+                password1['description'] = ""
+            }
+            if (!password1.hasOwnProperty('url')) {
+                password1['url'] = ""
+            }
+            if (!password1.hasOwnProperty('username')) {
+                password1['username'] = ""
+            }
+            if (!password1.hasOwnProperty('id')) {
+                password1['id'] = ""
             }
             decryptedPasswords.push(password1)
         }
         const keys = Object.keys(decryptedPasswords[0]);
-        let result = keys.join(",") + "\n";
+        let result = keys.join("\t") + "\n";
         decryptedPasswords.forEach(function (obj) {
-            result += keys.map(k => obj[k]).join(",") + "\n";
+            result += keys.map(k => obj[k]).join("\t") + "\n";
         });
         const date = new Date();
         const timeDate = date.toISOString().slice(0, 19).replace(/-/g, "").replace(/T/g, "").replace(/:/g, "");
-        fs.writeFileSync(location + `/${timeDate}.csv`, result);
+        fs.writeFileSync(location + `/${timeDate}${PMUtils.TSV}`, result, 'utf-8');
+        return true
+    }
+
+    /*
+    * Import password function
+    * 1) Parses passwords from csv files
+    * 2) Encrypts each password
+    * 3) Pushes to server or into local database
+    *
+    * @return  status    a state of password import
+    */
+    async importPasswords() {
+        const location = await this.selectDatabase(PMUtils.TSV)
+        const database = fs.readFileSync(location.toString(), 'utf-8').toString()
+        let linesArray = database.split("\n")
+        // get Header
+        const header = linesArray.shift().split("\t");
+        // get required column positions
+        const titlePos = header.indexOf("title");
+        const descriptionPos = header.indexOf("description");
+        const urlPos = header.indexOf("url");
+        const usernamePos = header.indexOf("username");
+        const passwordPos = header.indexOf("password");
+        if (titlePos === -1 || descriptionPos === -1 || urlPos === -1 || usernamePos === -1 || passwordPos === -1) {
+            return false
+        }
+        linesArray = linesArray.filter(line => (line !== "" && line !== "\n"));
+        for (const line of linesArray) {
+            const passwordArray = line.split("\t");
+            const title = passwordArray[titlePos];
+            const description = passwordArray[descriptionPos];
+            const url = passwordArray[urlPos];
+            const username = passwordArray[usernamePos];
+            const password = passwordArray[passwordPos];
+            await this.addPassword(title, description, url, username, password);
+        }
         return true
     }
 
@@ -480,31 +575,28 @@ class Controller {
    * 5) Generate 'encryptionKey' with HKDF a key from passwordKey, used for encryption/decryption
    *
    *
-   * @param  email             null|String     an email
+   * @param  salt             null|String      an email (remote login) or random salt (local login)
    * @param  masterPassword    String          a masterPassword
    *
    * @return passwordKey            object     a hash of stretched and normalized master password
    * @return masterPasswordHash     object     a hash of passwordKey, used for authentication
    * @return encryptionKey          object     a key under which a symmetricKey is encrypted
    */
-    async computeSecurityKeys(email, masterPassword) {
-        let salt
-        if (PMUtils.isEmpty(email)) {
-            salt = PMUtils.LOCAL_SECRET;
-        } else {
-            // generate Salt (Stretched email to 16 bytes)
-            salt = await Crypto.getHKDF(email, PMUtils.SECRET, 16, PMUtils.ENCRYPTION_KEY_INFO);
-        }
+    async computeSecurityKeys(salt, masterPassword) {
+        // Get salt for HKDF
+        const saltHash = Crypto.getSHA256(salt)
+        // Stretched email or salt to 16 bytes
+        const stretchedSalt = await Crypto.getHKDF(salt, saltHash, 16, PMUtils.STRETCH_SALT_INFO);
         // normalize master password
         const normalizedMasterPassword = masterPassword.normalize(PMUtils.NKDF)
         // stretch master password to 32 bytes
-        const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, salt, 32, PMUtils.ENCRYPTION_KEY_INFO)
+        const stretchedMasterPassword = await Crypto.getHKDF(normalizedMasterPassword, stretchedSalt, 32, PMUtils.STRETCH_MASTER_PASS_INFO)
         // create Password Key (Master Key)
-        const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, salt, 100000)
+        const passwordKey = Crypto.getPBKDF2(stretchedMasterPassword, stretchedSalt, 100000)
         // create Master Password Hash (Master Password Hash)
         const masterPasswordHash = Crypto.getPBKDF2(passwordKey, stretchedMasterPassword, 1)
         // create Encryption Key (Stretched Master Key)
-        const encryptionKey = await Crypto.getHKDF(passwordKey, salt, 32, PMUtils.ENCRYPTION_KEY_INFO)
+        const encryptionKey = await Crypto.getHKDF(passwordKey, stretchedSalt, 32, PMUtils.ENCRYPTION_KEY_INFO)
         return {passwordKey, masterPasswordHash, encryptionKey};
     }
 
@@ -517,7 +609,7 @@ class Controller {
       * @param  encryptionKey       String          a key used for encryption
       *
       * @return iv                  String     an unique iv used in encryption
-      * @return symmetricKey        String     an unencrypted symmetricKey used for databse encryption/decryption
+      * @return symmetricKey        String     an unencrypted symmetricKey used for database encryption/decryption
       * @return encryptedData       String     an encrypted symmetricKey which will be sent to server
       */
     generateEncryptionKeys(encryptionKey) {
@@ -569,7 +661,7 @@ class Controller {
 
     // Get stored default views, local if last login was local, remote if last login was remote
     getDefaultView() {
-        if (this.userID !== null) {
+        if (this.passwordKey !== null) {
             return PMUtils.VIEW_TYPE.passwordListView
         } else {
             return this.electronStore.get(PMUtils.DEFAULT_VIEW)
@@ -643,6 +735,66 @@ class Controller {
         this.electronStore.set(PMUtils.CUSTOM_DB_LOC, null)
     }
 
+    /*
+ * Handler providing dialog allowing selection of one FILE
+ * @param   extension   ".db" or ".tsv"
+ */
+    async selectDatabase(extension) {
+        const result = await dialog.showOpenDialog(this.win, {
+            filters: [
+                {name: 'fileType', extensions: [extension]},
+            ],
+            properties: ['openFile']
+        });
+        let selectedFile = "";
+        if (result?.filePaths?.length > 0) {
+            selectedFile = result?.filePaths[0];
+        }
+        return selectedFile;
+    }
+
+    /*
+     * Handler providing dialog allowing selection of one FOLDER
+     */
+    async selectFolder() {
+        let path = dialog.showOpenDialogSync(this.win, {
+            properties: ['openDirectory']
+        });
+        if (path.length > 0) {
+            path = path[0];
+        }
+        if (PMUtils.isEmpty(path)) {
+            path = ""
+        }
+        return path;
+    }
+
+    // Set window
+    setWin(win) {
+        this.win = win
+    }
+
+    // Set extension controller
+    setExtensionControllerLogout(extensionLogoutFunc) {
+        this.extensionLogoutFunc = extensionLogoutFunc
+    }
+
+    // Set extension controller
+    setExtensionControllerLogin(extensionLoginFunc) {
+        this.extensionLoginFunc = extensionLoginFunc
+    }
+
+    // Enable/Disable login related menu items
+    // @param   enable  boolean to enable or disable menu items
+    enableMenuItems(enable) {
+        const menu = Menu.getApplicationMenu()
+        let menuItemsIds = ['item-new-password', 'item-save-password', 'item-delete-password', 'item-export-password', 'item-import-password', 'user-account', 'user-logout']
+        menuItemsIds.forEach(id => {
+            let menuItem = menu.getMenuItemById(id)
+            menuItem.enabled = enable
+        })
+    }
+
     // Logout and clean data saved by application
     logoutImmediate() {
         this.loginMode = null;
@@ -651,6 +803,10 @@ class Controller {
         this.passwordKey = null;
         this.symmetricKey = null;
         this.customDatabaseLocation = null;
+        this.enableMenuItems(false)
+        if  (typeof this.extensionLogoutFunc === 'function') {
+            this.extensionLogoutFunc()
+        }
     }
 }
 

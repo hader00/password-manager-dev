@@ -1,0 +1,193 @@
+.flexWithSpacing {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flexWithCenter {
+    display: flex;
+    justify-content: center;
+}
+
+.justifyCenter {
+    justify-content: center;
+}
+
+.flexWithMarginT {
+    margin-top: 10px;
+    display: flex;
+}
+
+.flexWithMarginTB {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.p10 {
+    padding: 10px;
+}
+
+.pTB15 {
+    padding-bottom: 15px;
+    padding-top: 15px;
+}
+
+.pB10 {
+    padding-bottom: 10px;
+}
+
+.pT10 {
+    padding-top: 10px;
+}
+
+.pT30 {
+    padding-top: 30px;
+}
+
+.pT60 {
+    padding-top: 60px;
+}
+
+.mB20 {
+    margin-bottom: 20px;
+}
+
+.mT20 {
+    margin-top: 20px;
+}
+
+.boxShadowNone {
+    boxShadow: none;
+}
+
+.arrowButton {
+    left: 0;
+    display: flex;
+    align-items: center;
+}
+
+.left0 {
+    left: 0;
+}
+
+.right0 {
+    right: 0;
+}
+
+.passwordFieldHeader {
+    display: flex;
+    width: 70vw;
+}
+
+.passGenSliderOuter {
+    display: block;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.passGenSliderInner {
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-top: -15px;
+}
+
+.leftTextAlign {
+    text-align: left;
+}
+
+.passwordItemHeader {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    height: 60px;
+    align-items: center;
+}
+
+.dFlex {
+    display: flex;
+}
+
+.dBlock {
+    display: block;
+}
+
+.dGrid {
+    display: grid;
+}
+
+.favImg {
+    padding-top: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+}
+
+.GridTextFix {
+    line-height: 0.1;
+    margin-top: -1vh;
+}
+
+.pL10 {
+    padding-left: 10px;
+}
+
+.redColor {
+    color: red;
+}
+
+.grayColor {
+    color: gray;
+}
+
+.dimgrayColor {
+    color: dimgray;
+}
+
+.mT60dFlex {
+    display: flex;
+    margin-top: 60px;
+}
+
+.m0dFlex {
+    display: flex;
+    margin: 0;
+}
+
+.defaultWidth {
+    width: 95vw;
+}
+
+.halfVH {
+    width: 50vh;
+}
+
+.wrapText {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.limitText {
+    width: 80vw;
+    word-wrap: break-word;
+}
+
+.generator {
+    display: block;
+    text-align: center;
+    padding: 20px 10px;
+    background-color: #E0E0E0;
+    border-radius: 15px 0 15px 15px;
+}
+
+.modalOuter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalInner {
+    position: absolute;
+    width: 90vw;
+    background-color: white;
+    padding: 10px;
+    border-radius: 15px;
+}

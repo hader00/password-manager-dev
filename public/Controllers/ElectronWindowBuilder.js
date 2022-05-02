@@ -17,7 +17,9 @@ class ElectronWindowBuilder {
 
     constructor(controller) {
         this.controller = controller;
-        this.init();
+        this.init().then(r => {
+            return r
+        });
         return this.win;
     }
 
@@ -37,7 +39,9 @@ class ElectronWindowBuilder {
                         label: 'Items',
                         submenu: [
                             {
+                                id: 'item-new-password',
                                 label: 'New Password',
+                                enabled: false,
                                 accelerator: 'CmdOrCtrl+N',
                                 click: () => {
                                     // Menu: Open new password item view
@@ -45,7 +49,9 @@ class ElectronWindowBuilder {
                                 },
                             },
                             {
+                                id: 'item-save-password',
                                 label: 'Save Password',
+                                enabled: false,
                                 accelerator: 'CmdOrCtrl+S',
                                 click: () => {
                                     // Menu: Trigger save password item action
@@ -53,7 +59,9 @@ class ElectronWindowBuilder {
                                 },
                             },
                             {
+                                id: 'item-delete-password',
                                 label: 'Delete Password',
+                                enabled: false,
                                 accelerator: 'CmdOrCtrl+Backspace',
                                 click: () => {
                                     // Menu: Trigger delete password item action
@@ -62,10 +70,22 @@ class ElectronWindowBuilder {
                             },
                             {type: 'separator'},
                             {
+                                id: 'item-export-password',
                                 label: 'Export Passwords',
+                                enabled: false,
                                 click: () => {
                                     // Menu: Open export password items view
                                     this.win.webContents.send(ChannelUtils.MENU_EXPORT_CALL, true)
+                                },
+                            },
+                            {
+                                id: 'item-import-password',
+                                label: 'Import Passwords',
+                                enabled: false,
+                                click: async () => {
+                                    // Menu: Open export password items view
+                                    await this.controller.importPasswords()
+                                    this.win.webContents.send(ChannelUtils.MENU_IMPORT_CALL, true)
                                 },
                             },
                         ]
@@ -80,13 +100,16 @@ class ElectronWindowBuilder {
                         label: 'User',
                         submenu: [
                             {
+                                id: 'user-account',
                                 label: 'Account settings',
+                                enabled: false,
                                 click: () => {
                                     // Menu: Open account view
                                     this.win.webContents.send(ChannelUtils.MENU_ACCOUNT_CALL, true)
                                 },
                             },
                             {
+                                id: 'user-clear',
                                 label: 'Clear app data',
                                 click: () => {
                                     this.clearAppData()
@@ -94,7 +117,9 @@ class ElectronWindowBuilder {
                             },
                             {type: 'separator'},
                             {
+                                id: 'user-logout',
                                 label: 'Logout',
+                                enabled: false,
                                 click: () => {
                                     // Menu: Trigger logout action
                                     this.win.webContents.send(ChannelUtils.MENU_LOGOUT_CALL, true)
@@ -199,6 +224,8 @@ class ElectronWindowBuilder {
                 preload: path.join(__dirname, "./preload.js")
             }
         })
+        //pass win to Controller
+        this.controller.setWin(this.win);
         // Load the index.html, or an url in dev mode
         await this.win.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../../build/index.html')}`);
         //

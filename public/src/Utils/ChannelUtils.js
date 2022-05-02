@@ -78,6 +78,7 @@ const MENU_DELETE_CALL = 'menu:deleteItem';
 const MENU_NEW_CALL = 'menu:newItem';
 const MENU_EXPORT_CALL = 'menu:exportItems';
 const MENU_ACCOUNT_CALL = 'menu:account';
+const MENU_IMPORT_CALL = 'menu:import';
 
 module.exports = {
     DEFAULT_VIEW_RESPONSE,
@@ -130,5 +131,6 @@ module.exports = {
     MENU_DELETE_CALL,
     MENU_NEW_CALL,
     MENU_EXPORT_CALL,
-    MENU_ACCOUNT_CALL
+    MENU_ACCOUNT_CALL,
+    MENU_IMPORT_CALL
 }

@@ -1,5 +1,6 @@
-const {ipcMain, shell, dialog} = require('electron')
+const {ipcMain, shell} = require('electron')
 const ChannelUtils = require("../src/Utils/ChannelUtils");
+const PMUtils = require("../src/Utils/PMUtils");
 
 /**
  * ElectronController object initialize listeners for ipcMain messaging, required
@@ -12,7 +13,9 @@ class ElectronController {
     constructor(controller, win) {
         this.controller = controller;
         this.win = win;
-        this.init();
+        this.init().then(r => {
+            return r
+        });
     }
 
     init() {
@@ -65,7 +68,7 @@ class ElectronController {
                     e.sender.send(ChannelUtils.SECURITY_RESPONSE, {response: timeouts});
                 });
                 // Logout and clear users data
-                ipcMain.on(ChannelUtils.LOGOUT_CALL, (e) => {
+                ipcMain.on(ChannelUtils.LOGOUT_CALL, () => {
                     this.controller.logoutImmediate();
                 });
                 // ********* END shared messages with extension ********* //
@@ -128,18 +131,18 @@ class ElectronController {
                 });
                 // Open browser with provided url
                 ipcMain.on(ChannelUtils.BROWSER_CALL, (e, url) => {
-                    shell.openExternal(url).then((r) => {
+                    shell.openExternal(url).then(() => {
                         e.sender.send(ChannelUtils.BROWSER_RESPONSE);
                     })
                 })
                 // Open dialog with file selector
                 ipcMain.on(ChannelUtils.FILE_DIALOG_CALL, async (e) => {
-                    const selectedFile = await this.selectDatabase();
+                    const selectedFile = await this.controller.selectDatabase(PMUtils.DB);
                     e.sender.send(ChannelUtils.FILE_DIALOG_RESPONSE, {selectedFile: selectedFile});
                 })
                 // Open dialog with folder selector
                 ipcMain.on(ChannelUtils.FOLDER_DIALOG_CALL, async (e) => {
-                    const selectedFolder = await this.selectFolder();
+                    const selectedFolder = await this.controller.selectFolder();
                     e.sender.send(ChannelUtils.FOLDER_DIALOG_RESPONSE, {selectedFolder: selectedFolder});
                 })
                 // ********* END Custom for electron app ********* //
@@ -148,34 +151,6 @@ class ElectronController {
                 reject(e);
             }
         });
-    }
-
-    /*
-     * Handler providing dialog allowing selection of one FILE
-     */
-    async selectDatabase() {
-        const result = await dialog.showOpenDialog(this.win, {
-            properties: ['openFile']
-        });
-        let selectedFile = "";
-        if (result.filePaths.length > 0) {
-            selectedFile = result.filePaths[0];
-        }
-        return selectedFile;
-    }
-
-    /*
-     * Handler providing dialog allowing selection of one FOLDER
-     */
-    async selectFolder() {
-        const result = await dialog.showOpenDialog(this.win, {
-            properties: ['openDirectory']
-        });
-        let selectedFolder = "";
-        if (result.filePaths.length > 0) {
-            selectedFolder = result.filePaths[0];
-        }
-        return selectedFolder;
     }
 }
 

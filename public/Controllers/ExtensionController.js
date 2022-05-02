@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const ChannelUtils = require("../src/Utils/ChannelUtils");
+const PMUtils = require("../src/Utils/PMUtils");
 
 /**
  * ExtensionController object that starts websocket for communication
@@ -20,12 +21,14 @@ class ExtensionController {
     }
 
     init() {
+        this.controller.setExtensionControllerLogout(this.logout)
+        this.controller.setExtensionControllerLogin(this.login)
         let that = this;
         this.server.on('connection', function (socket) {
             that.sockets.push(socket);
             // Act on message from socket
             socket.on('message', async function (msg) {
-                let message = JSON.parse(msg);
+                let message = JSON.parse(msg.toString());
                 let response = {};
                 //********* socket messaging ****//
                 /* Keep channel names synchronised with ./ChannelUtils when changing */
@@ -89,6 +92,23 @@ class ExtensionController {
                 that.sockets = that.sockets.filter(s => s !== socket);
             });
         });
+    }
+
+    logout = () => {
+        if (this.sockets !== null) {
+            this.sockets.forEach(s => s.send(JSON.stringify({channel: ChannelUtils.LOGOUT_CALL})));
+        }
+    }
+
+    login = () => {
+        if (this.sockets !== null) {
+            const {logoutTimeout} = this.controller.getStoredSecurity();
+            this.sockets.forEach(s => s.send(JSON.stringify({
+                channel: ChannelUtils.DEFAULT_VIEW_RESPONSE,
+                defaultView: PMUtils.VIEW_TYPE.passwordListView,
+                timeout: logoutTimeout
+            })));
+        }
     }
 }
 

@@ -1,13 +1,36 @@
 import React from 'react';
 import PasswordItem from "../components/PasswordItem";
 import PropTypes from "prop-types";
-import ViewType from "../other/ViewType";
+import PMReactUtils from "../other/PMReactUtils";
 import {Add,} from "@material-ui/icons";
 import ImportExportIcon from '@material-ui/icons/ImportExport';
 import {AppBar, Box, Button, CircularProgress, Modal, TextField, Toolbar, Typography} from "@material-ui/core";
 import {PasswordListViewController} from "../../ViewController";
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import * as LANGUAGE from '../other/language_en.js';
 
+/**
+ * Class PasswordListView
+ * This class provides view for all passwords
+ *
+ * @param   searchInput                 search field input state
+ * @param   activePasswordID            id of active password item
+ * @param   inputReadOnly               view mode property
+ * @param   addingNewItem               add new password mode
+ * @param   open                        open modal
+ * @param   exportLoading               loading animation for export
+ * @param   location                    location of exported file
+ * @param   password                    password for account or local database
+ * @param   email                       email for account
+ * @param   passwordType                password type state (text or password)
+ * @param   passwordError               password error state
+ * @param   emailError                  email error state
+ * @param   locationError               location error state
+ * @param   localMode                   local mode boolean
+ * @param   timer                       logout timer
+ * @param   fetchTimer                  fetchTimer of new passwords from server
+ *
+ */
 export class PasswordListView extends PasswordListViewController {
 
     constructor(props) {
@@ -27,92 +50,53 @@ export class PasswordListView extends PasswordListViewController {
             emailError: "",
             locationError: "",
             localMode: false,
-            selectFolderLoaded: false,
-            loaded: false,
             timer: null,
             fetchTimer: null
         }
     }
 
+    /**
+     * componentDidMount function starts when the class is mounted.
+     * setups menu listeners, gets current mode, get auto-logout time
+     * set auto-logout timer, set auto-fetch timer
+     */
     componentDidMount() {
-        this.props.fetchAllPasswords();
-        this.waitForLogout();
-        this.waitForNewItem();
-        this.waitForExportItems();
-        this.getMode();
-        this.waitForAccountFromElectron();
-        this.autoLogOut().then(r => {
-            return r
-        })
-        this.autoFetch().then(r => {
-            return r
-        })
+        this.passwordListViewDidMount();
     }
-
-    waitForAccountFromElectron = () => {
-        this.waitForAccount().then((result) => {
-            clearTimeout(this.state.timer)
-            this.setState({timer: null})
-            clearTimeout(this.state.fetchTimer)
-            this.setState({fetchTimer: null})
-            this.props.changeParentsActiveView(ViewType.accountView)
-        })
-    }
-
-    getMode = () => {
-        window.electron.getMode().then((result) => {
-            this.setState({localMode: result.response === 0})
-        })
-    }
-
-    waitForLogout = () => {
-        window.electron.waitForLogout().then((result) => {
-            this.logoutImmediate()
-            this.props.changeParentsActiveView(ViewType.defaultLoginView)
-        })
-    }
-
-    waitForNewItem = () => {
-        window.electron.waitForNewItem().then((result) => {
-            this.setState({addingNewItem: true});
-        })
-    }
-
-    waitForExportItems = () => {
-        window.electron.waitForExportItems().then((result) => {
-            this.setState({open: true});
-        })
-    }
-
-    componentDidUpdate(prevProps, prevState, _) {
+    /**
+     * componentDidUpdate function starts when states or props changes.
+     *
+     * When user searches among all passwords
+     *
+     * @param   prevProps   prevProps - previous properties
+     * @param   prevState   prevState - previous states
+     * @param   snapshot    snapshot
+     */
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevState.searchInput !== this.state.searchInput) {
             this.searchItems(this.state.searchInput);
         }
     }
 
-    exportItems = () => {
-        window.electron.exportItems(this.state.password, this.state.email, this.state.location).then((result) => {
-            if (result.response === true) {
-                this.setState({open: false});
-                this.setState({exportLoading: false});
-                this.setState({location: ""})
-                this.setState({password: ""})
-                this.setState({email: ""})
-                this.setState({locationError: ""})
-                this.setState({passwordError: ""})
-                this.setState({emailError: ""})
-            } else {
-                this.setState({emailError: "Error occurred, please check your email."})
-                this.setState({passwordError: "Error occurred, please check your password."})
-                this.setState({exportLoading: false})
-            }
-        });
+    /**
+     * clearState function
+     * reverts states to default
+     */
+    clearState = () => {
+        this.setState({open: false});
+        this.setState({exportLoading: false});
+        this.setState({location: ""})
+        this.setState({password: ""})
+        this.setState({email: ""})
+        this.setState({locationError: ""})
+        this.setState({passwordError: ""})
+        this.setState({emailError: ""})
     }
 
-    onChange = (e) => {
-        this.setState({[e.target.name]: e.target.value});
-    }
-
+    /**
+     * searchItems function
+     * search handler for password list filtration
+     */
     searchItems = () => {
         if (this.state.searchInput !== '') {
             const filteredData = this.props.passwords.filter((item) => {
@@ -125,51 +109,31 @@ export class PasswordListView extends PasswordListViewController {
         }
     }
 
+    /**
+     * handlePasswordView function
+     * open password view for select password item
+     */
     handlePasswordView = (activePasswordVal, openTypeVal, addingNewItemVal) => {
         this.setState({activePasswordID: activePasswordVal});
         this.setState({inputReadOnly: openTypeVal});
         this.setState({addingNewItem: addingNewItemVal});
     }
-    togglePasswordType = (type) => {
-        if (this.state[type] === "password") {
-            this.setState({[type]: "text"})
-        } else {
-            this.setState({[type]: "password"})
-        }
-    }
 
-    autoLogOut = async () => {
-        let timeout = await window.electron.getDefaultSecurity().then((result) => {
-            return parseInt(result?.response?.logoutTimeout) * 60 * 1000;
-        })
-        if (timeout === null) {
-            timeout = 5 * 60 * 1000; // 5 minutes
-        }
-        if (timeout !== -1) {
-            let timer = setTimeout(() => {
-                this.logoutImmediate()
-                this.props.changeParentsActiveView(ViewType.defaultLoginView)
-            }, timeout);
-            this.setState({timer: timer})
-        }
-    }
-
+    /**
+     * autoFetch function
+     * setup timer for password fetching
+     */
     autoFetch = async () => {
         let fetchTimer = setTimeout(() => {
             this.props.fetchAllPasswords()
-        }, 10000);
+        }, 5000);
         this.setState({fetchTimer: fetchTimer})
     }
 
     render() {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
-            if (this.state.timer !== null) {
-                clearTimeout(this.state.timer)
-                this.setState({timer: null})
-            }
-            if (this.state.fetchTimer !== null) {
-                clearTimeout(this.state.fetchTimer)
-                this.setState({fetchTimer: null})
+            if (this.clearTimers === 'function'){
+                this.clearTimers();
             }
             this.props.setPasswordItem(
                 {
@@ -178,14 +142,16 @@ export class PasswordListView extends PasswordListViewController {
                     inputReadOnly: this.state.inputReadOnly,
                     addingNewItem: this.state.addingNewItem
                 });
-            this.props.changeParentsActiveView(ViewType.passwordItem)
+            this.props.changeParentsActiveView(PMReactUtils.ViewType.passwordItem)
             return (<></>)
         } else {
-            this.waitForExportItems();
+            if (this.waitForExportItems === 'function'){
+                this.waitForExportItems();
+            }
             return (
                 <>
                     <div className="container">
-                        <AppBar variant="fullWidth">
+                        <AppBar>
                             <Toolbar style={{justifyContent: "space-between"}}>
                                 <Button
                                     style={{marginRight: "10px", backgroundColor: "#007fff"}}
@@ -198,15 +164,15 @@ export class PasswordListView extends PasswordListViewController {
                                            focused={true}
                                            value={this.state.searchInput} variant="outlined" type="text" id="search"
                                            size="small"
-                                           placeholder="Search" onChange={(e) => {
+                                           placeholder={LANGUAGE.SEARCH} onChange={(e) => {
                                     this.setState({passwordError: ""})
                                     this.setState({searchInput: e.target.value})
                                 }
                                 }/>
                             </Toolbar>
                         </AppBar>
-                        <Box style={{paddingTop: "30px"}}>
-                            <p id="no-items"> {(this.props.passwords.size === 0) ? "No Passwords" : ""}</p>
+                        <Box className="pT30">
+                            <p id="no-items"> {(this.props.passwords.size === 0) ? LANGUAGE.NO_PASSWORDS : PMReactUtils.EMPTY_STRING}</p>
                             <div id="passwords">
                                 {(this.state.searchInput?.length >= 1 && this.props.filteredPasswords?.length >= 1) ? (
                                     this.props.filteredPasswords?.map((password) => {
@@ -237,27 +203,22 @@ export class PasswordListView extends PasswordListViewController {
                         </Box>
                     </div>
                     <Modal
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                        className="modalOuter"
                         open={this.state.open}
                         onClose={() => {
+                            this.autoLogOut().then(r => {
+                                return r
+                            })
+                            this.autoFetch().then(r => {
+                                return r
+                            })
                             this.setState({open: false})
                         }}
                     >
-                        <div style={{
-                            position: 'absolute',
-                            width: "90vw",
-                            backgroundColor: "white",
-                            padding: "10px",
-                            borderRadius: "15px"
-                        }}>
-                            <Typography style={{textAlign: "center"}} variant="h5">Please select location and insert
-                                your credentials.</Typography>
-                            <div style={{justifyContent: "center"}}>
-
+                        <div className="modalInner">
+                            <Typography style={{textAlign: "center"}}
+                                        variant="h5">{LANGUAGE.PLEASE_SELECT_LOCATION_AND_INSERT_CREDENTIALS}</Typography>
+                            <div className="justifyCenter">
                                 <Button
                                     style={{marginBottom: "10px", marginTop: "10px"}}
                                     variant="contained"
@@ -265,30 +226,34 @@ export class PasswordListView extends PasswordListViewController {
                                 >
                                     {this.state.location === "" ? "Select Folder" : "Change"}
                                     <input id="hiddenField" type="file" name={"user-file-location"} hidden
-                                           onClick={() => {
-                                               window.electron.selectFolder().then((result) => {
-                                                   this.setState({location: result.selectedFolder})
-                                               });
+                                           onClick={(e) => {
+                                               e.preventDefault();
+                                               this.selectFolderFromElectron();
                                            }}/>
                                 </Button>
-                                <label style={{color: "gray", paddingLeft: "10px"}}>{this.state.location}</label>
-                                <label style={{
-                                    color: "red",
-                                    paddingLeft: "10px"
-                                }}>{this.state.location === "" ? this.state.locationError : ""}</label>
+                                <div className="mT10"/>
+                                <div className="wrapText pT10 pB10">
+                                    <div className="limitText">
+                                        <label className="grayColor">{this.state.location}</label>
+                                    </div>
+                                    <label
+                                        className="redColor">{this.state.location === "" ? this.state.locationError : ""}</label>
+                                </div>
                                 {this.state.localMode === false ?
-                                    <TextField fullWidth type={"text"} label="Enter Email"
-                                               id="email" name="email" onChange={(e) => {
-                                        this.setState({emailError: ""})
-                                        this.onChange(e)
-                                    }} error={this.state.emailError}
-                                               value={this.state.email} required
-                                    />
+                                    <div className="m0dFlex pB10 pT10">
+                                        <TextField fullWidth type={"text"} label="Enter Email"
+                                                   id="email" name="email" onChange={(e) => {
+                                            this.setState({emailError: ""})
+                                            this.onChange(e)
+                                        }} error={this.state.emailError}
+                                                   value={this.state.email} required
+                                        />
+                                    </div>
                                     :
                                     <></>
                                 }
-                                <div style={{display: "flex", margin: 0, paddingBottom: "10px"}}>
-                                    <TextField fullWidth type={this.state.passwordType} label="Enter Password"
+                                <div className="m0dFlex pB10">
+                                    <TextField fullWidth type={this.state.passwordType} label={LANGUAGE.ENTER_PASSWORD}
                                                id="password" name="password" onChange={(e) => {
                                         this.setState({passwordError: ""});
                                         this.onChange(e);
@@ -297,7 +262,6 @@ export class PasswordListView extends PasswordListViewController {
                                     />
                                     {(this.state.password?.length > 0) ?
                                         <Button
-                                            variant=""
                                             onClick={() => {
                                                 this.togglePasswordType("passwordType")
                                             }}
@@ -326,39 +290,33 @@ export class PasswordListView extends PasswordListViewController {
                                                 this.setState({exportLoading: true});
                                                 await this.exportItems(e);
                                             } else {
-                                                this.setState({passwordError: this.state.password === "" ? "Please input password" : ""})
-                                                this.setState({emailError: this.state.email === "" ? "Please input email" : ""})
-                                                this.setState({locationError: this.state.location === "" ? "Please select folder" : ""})
+                                                this.sanitizeState()
                                             }
                                         } else {
-                                            this.setState({passwordError: this.state.password === "" ? "Please input password" : ""})
-                                            this.setState({emailError: this.state.email === "" ? "Please input email" : ""})
-                                            this.setState({locationError: this.state.location === "" ? "Please select folder" : ""})
+                                            this.sanitizeState()
                                         }
                                     }
 
-                                    }>Export
+                                    }>{LANGUAGE.EXPORT}
                             </Button>
                             <Button fullWidth style={{marginTop: "10px"}} color="primary"
                                     variant="contained"
                                     type="button" onClick={() => {
-                                this.setState({open: false})
-                                this.setState({location: ""})
-                                this.setState({password: ""})
-                                this.setState({email: ""})
-                                this.setState({locationError: ""})
-                                this.setState({passwordError: ""})
-                                this.setState({emailError: ""})
-                            }}>Cancel</Button>
-
+                                this.clearState()
+                            }}>{LANGUAGE.CANCEL}</Button>
                         </div>
                     </Modal>
                 </>
             );
         }
     }
-}
 
+    sanitizeState = () => {
+        this.setState({passwordError: this.state.password === "" ? LANGUAGE.PLEASE_INPUT_PASSWORD : PMReactUtils.EMPTY_STRING})
+        this.setState({emailError: this.state.email === "" ? LANGUAGE.PLEASE_INPUT_EMAIL : PMReactUtils.EMPTY_STRING})
+        this.setState({locationError: this.state.location === "" ? LANGUAGE.PLEASE_SELECT_FOLDER : PMReactUtils.EMPTY_STRING})
+    }
+}
 
 PasswordListView.propTypes = {
     componentName: PropTypes.string.isRequired,

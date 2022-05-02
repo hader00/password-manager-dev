@@ -15,7 +15,7 @@ Chromium based browser extension is accessible on: [github.com/hader00/password-
 Server is accessible on: [github.com/hader00/password-manager-app-server](https://github.com/hader00/password-manager-app-server).
 
 ## How to install
-Visit [Github Release](https://github.com/hader00/password-manager-dev/releases) and download the latest installer for your operating system.
+Visit [GitHub Release](https://github.com/hader00/password-manager-dev/releases) and download the latest installer for your operating system.
 
 Additionally, you can download [Chrome extension](https://github.com/hader00/password-manager-extension-dev/releases) and build [custom server](https://github.com/hader00/password-manager-app-server/).
 

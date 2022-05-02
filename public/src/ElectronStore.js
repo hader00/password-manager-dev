@@ -13,7 +13,6 @@ class ElectronStore {
             },
             userEmail: {
                 type: 'string',
-                format: 'email',
             },
             storedServer: {
                 type: 'string',

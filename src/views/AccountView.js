@@ -1,11 +1,21 @@
 import React from 'react';
-import ViewType from "../other/ViewType";
+import PMReactUtils from "../shared/other/PMReactUtils";
 import PropTypes from "prop-types";
+import '../shared/App.css';
 import {AppBar, Box, Button, Select, TextField, Toolbar, Typography} from "@material-ui/core";
-
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
-import {AccountViewController} from "../../ViewController";
+import {AccountViewController} from "../ViewController";
+import * as LANGUAGE from '../shared/other/language_en.js';
 
+/**
+ * Class AccountView - account view
+ * Provides options for logout, clipboard auto clear timeout and auto-logout timeout
+ *
+ * @param   time                        auto-logout timeout fetched from electron
+ * @param   customTime                  auto-logout timeout selector, custom value
+ * @param   clipboardTime               clipboard timeout fetched from electron
+ * @param   customClipboardTime         clipboard timeout selector, custom value
+ */
 class AccountView extends AccountViewController {
     constructor(props) {
         super(props);
@@ -21,23 +31,23 @@ class AccountView extends AccountViewController {
     render() {
         return (
             <Box fullwidth>
-                <AppBar variant="fullWidth">
+                <AppBar>
                     <Toolbar style={{justifyContent: "space-between"}}>
-                        <div style={{left: "0", display: "flex", alignItems: "center"}}>
+                        <div className="arrowButton">
                             <Button
                                 style={{marginRight: "10px", backgroundColor: "#007fff"}}
                                 startIcon={<ArrowBackIosIcon/>}
                                 color="primary" variant="contained"
-                                onClick={() => this.handleViewChange(ViewType.passwordListView)}>Back</Button>
-                            <Typography style={{fontWeight: "bold"}} variant="h5">Account</Typography>
+                                onClick={() => this.handleViewChange(PMReactUtils.ViewType.passwordListView)}>{LANGUAGE.BACK}</Button>
+                            <Typography style={{fontWeight: "bold"}} variant="h5">{LANGUAGE.ACCOUNT}</Typography>
                         </div>
                     </Toolbar>
                 </AppBar>
                 <Box fullwidth style={{paddingTop: "80px"}}>
-                    <Typography style={{fontWeight: "bold"}} variant="h5">Security</Typography>
-                    <div style={{display: "flex", justifyContent: "space-between"}}>
+                    <Typography style={{fontWeight: "bold"}} variant="h5">{LANGUAGE.SECURITY}</Typography>
+                    <div className="flexWithSpacing">
                         <div style={{paddingTop: "5px"}}>
-                            <label htmlFor="time"><b>Vault Timeout:</b></label>
+                            <label htmlFor="time"><b>{LANGUAGE.VAULT_TIMEOUT + PMReactUtils.COLON}</b></label>
                         </div>
                         <div>
                             <Select
@@ -50,19 +60,19 @@ class AccountView extends AccountViewController {
                                     id: 'time',
                                 }}
                             >
-                                <option value={-1}>Never</option>
-                                <option value={1}>1 minute</option>
-                                <option value={5}>5 minutes</option>
-                                <option value={10}>10 minutes</option>
-                                <option value={20}>20 minutes</option>
-                                <option value={0}>Custom</option>
+                                <option value={-1}>{LANGUAGE.NEVER}</option>
+                                <option value={1}>{"1 " + LANGUAGE.MINUTE}</option>
+                                <option value={5}>{"5 " + LANGUAGE.MINUTES}</option>
+                                <option value={10}>{"10 " + LANGUAGE.MINUTES}</option>
+                                <option value={20}>{"20 " + LANGUAGE.MINUTES}</option>
+                                <option value={0}>{LANGUAGE.CUSTOM}</option>
                             </Select>
                         </div>
                     </div>
                     {this.state.time === 0 || this.state.time === "0" ?
-                        <div style={{display: "flex", justifyContent: "space-between"}}>
+                        <div className="flexWithSpacing">
                             <div style={{paddingTop: "15px", paddingLeft: "15px"}}>
-                                <label htmlFor="customClipboardTime">minutes:</label>
+                                <label htmlFor="customClipboardTime">{LANGUAGE.MINUTES + PMReactUtils.COLON}</label>
                             </div>
                             <TextField value={this.state.customTime} id="customTime" variant="outlined"
                                        name="customTime" label="minutes" type={"number"} min={1} max={1024}
@@ -73,7 +83,8 @@ class AccountView extends AccountViewController {
                     }
                     <div style={{paddingTop: "20px", display: "flex", justifyContent: "space-between"}}>
                         <div style={{paddingTop: "5px"}}>
-                            <label htmlFor="clipboardTime"><b>Clear Clipboard:</b></label>
+                            <label
+                                htmlFor="clipboardTime"><b>{LANGUAGE.CLEAR_CLIPBOARD + PMReactUtils.COLON}</b></label>
                         </div>
                         <div>
                             <Select
@@ -86,17 +97,17 @@ class AccountView extends AccountViewController {
                                     id: 'clipboardTime',
                                 }}
                             >
-                                <option value={-1}>Never</option>
-                                <option value={10}>10 seconds</option>
-                                <option value={20}>20 seconds</option>
-                                <option value={0}>Custom</option>
+                                <option value={-1}>{LANGUAGE.NEVER}</option>
+                                <option value={10}>{"10 " + LANGUAGE.SECONDS}</option>
+                                <option value={20}>{"20 " + LANGUAGE.SECONDS}</option>
+                                <option value={0}>{LANGUAGE.CUSTOM}</option>
                             </Select>
                         </div>
                     </div>
                     {this.state.clipboardTime === 0 || this.state.clipboardTime === "0" ?
-                        <div style={{display: "flex", justifyContent: "space-between"}}>
+                        <div className="flexWithSpacing">
                             <div style={{paddingTop: "15px", paddingLeft: "15px"}}>
-                                <label htmlFor="customClipboardTime">seconds:</label>
+                                <label htmlFor="customClipboardTime">{LANGUAGE.SECONDS + PMReactUtils.COLON}</label>
                             </div>
                             <TextField value={this.state.customClipboardTime} id="customClipboardTime"
                                        variant="outlined" name="customClipboardTime" label="seconds" min={1} max={1024}
@@ -106,9 +117,9 @@ class AccountView extends AccountViewController {
                         <></>
                     }
                 </Box>
-                <Typography style={{paddingTop: "20px", fontWeight: "bold"}} variant="h5">Logout</Typography>
+                <Typography style={{paddingTop: "20px", fontWeight: "bold"}} variant="h5">{LANGUAGE.LOGOUT}</Typography>
                 <Button variant="contained" color="primary" onClick={() => {
-                    this.handleViewChange(ViewType.defaultLoginView)
+                    this.handleViewChange(PMReactUtils.ViewType.defaultLoginView)
                 }}>
                     Logout
                 </Button>
@@ -116,12 +127,25 @@ class AccountView extends AccountViewController {
         );
     }
 
+    /**
+     * componentDidMount function starts when the class is mounted.
+     * Asks electron for stored timeouts
+     */
     componentDidMount() {
         this.getDefaultSecurityFromElectron().then(r => {
             return r
         })
     }
 
+    /**
+     * componentDidUpdate function starts when states or props changes.
+     *
+     * When user changes any state call setDefaultSecurityFromElectron()
+     *
+     * @param   prevProps   prevProps - previous properties
+     * @param   prevState   prevState - previous states
+     * @param   snapshot    snapshot
+     */
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevState.time !== this.state.time || prevState.customTime !== this.state.customTime
             || prevState.clipboardTime !== this.state.clipboardTime || prevState.customClipboardTime !== this.state.customClipboardTime) {
@@ -129,14 +153,20 @@ class AccountView extends AccountViewController {
         }
     }
 
+    /**
+     * handleViewChange function
+     * Sends App class new view
+     *
+     * @param   location   new view
+     */
     handleViewChange = (location) => {
         this.props.changeParentsActiveView(location);
     }
 
-    onChange = (e) => {
-        this.setState({[e.target.name]: e.target.value});
-    };
-
+    /**
+     * getDefaultSecurityFromElectron function
+     * Asks electron for clipboard and auto-logout timeouts and sets them
+     */
     getDefaultSecurityFromElectron = async () => {
         let result = await this.getDefaultSecurity()
         if (["-1", "10", "20"].indexOf(result.response.clearTimeout) !== -1) {
@@ -151,9 +181,12 @@ class AccountView extends AccountViewController {
             this.setState({time: 0})
             this.setState({customTime: parseInt(result.response.logoutTimeout)})
         }
-
     }
 
+    /**
+     * setDefaultSecurityFromElectron function
+     * Handles custom selected values and sends selected values to electron
+     */
     setDefaultSecurityFromElectron = () => {
         let timeouts = {
             time: 0,

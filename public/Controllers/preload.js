@@ -1,5 +1,5 @@
 /*
-* Cannot import consts from ./ChannelUtils for security reasons
+* Cannot import constants from ./ChannelUtils for security reasons
 * Keep channel names synchronised with ./ChannelUtils when changing
 */
 process.once('loaded', () => {
@@ -265,6 +265,14 @@ process.once('loaded', () => {
         async waitForAccount() {
             return new Promise((resolve) => {
                 ipcRenderer.on('menu:account', (_, arg) => {
+                    resolve(arg);
+                });
+            });
+        },
+        // Menu: Import action
+        async waitForImportMenuFromElectron() {
+            return new Promise((resolve) => {
+                ipcRenderer.on('menu:import', (_, arg) => {
                     resolve(arg);
                 });
             });

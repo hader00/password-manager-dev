@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const hkdf = require('js-crypto-hkdf');
-const {HKDF_SHA512, SHA512, ALGORITHM} = require("./Utils/PMUtils");
+const {HKDF_SHA512, SHA512, ALGORITHM, SHA256} = require("./Utils/PMUtils");
 
 /**
  * Crypto object that handles cryptography operations of the application
@@ -10,6 +10,13 @@ class Crypto {
     static getPBKDF2(password, salt, iterationsCount) {
         const derivedKey = crypto.pbkdf2Sync(password, salt, iterationsCount, 32, SHA512);
         return derivedKey.toString('hex')
+    }
+
+    //
+    static getSHA256(text) {
+        return crypto.createHash(SHA256).update(
+            Buffer.from(text)
+        ).digest('hex')
     }
 
     //

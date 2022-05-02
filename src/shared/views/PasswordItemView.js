@@ -18,9 +18,33 @@ import {
     Toolbar,
     Typography
 } from "@material-ui/core";
+import PMReactUtils from "../other/PMReactUtils";
+import * as LANGUAGE from '../other/language_en.js';
 
+/**
+ * Class PasswordItemView
+ * This class provides view for password viewing and editing.
+ *
+ * @param   titleError               title error state
+ * @param   titleHelperText          title error helper text state
+ * @param   generator                generator properties
+ * @param   showGenerator            open generator state
+ * @param   inputReadOnly            view mode property
+ * @param   addingNewItem            add new password mode
+ */
 export class PasswordItemView extends PasswordItemViewController {
 
+
+    /**
+     * defaultProps
+     *
+     * @param   password            password object
+     * @param   open                open modal
+     * @param   updateLoading       loading animation for update
+     * @param   deleteLoading       loading animation for delete
+     * @param   saveLoading         loading animation for save
+     * @param   inputReadOnly       view mode property
+     */
     static defaultProps = {
         password: {
             username: "",
@@ -50,7 +74,6 @@ export class PasswordItemView extends PasswordItemViewController {
                 upperCase: true,
             },
             showGenerator: false,
-            passwordFiledFocused: false,
             inputReadOnly: this.props.inputReadOnly,
             addingNewItem: this.props.addingNewItem
         }
@@ -61,29 +84,30 @@ export class PasswordItemView extends PasswordItemViewController {
         return (
             <>
                 <FormControl style={{display: "flex"}}>
-                    <AppBar variant="fullWidth">
+                    <AppBar>
                         <Toolbar style={{justifyContent: "space-between"}}>
-                            <div style={{left: "0"}}>
+                            <div className="left0">
                                 <Button
                                     style={{marginRight: "10px", backgroundColor: "#007fff"}}
                                     startIcon={<ArrowBackIosIcon/>}
                                     color="primary" variant="contained"
-                                    onClick={this.popView}>Back</Button>
+                                    onClick={() => {
+                                        this.handleViewChange(PMReactUtils.ViewType.passwordListView)
+                                    }}>{LANGUAGE.BACK}</Button>
                             </div>
-                            <div style={{display: "flex"}}>
+                            <div className="dFlex">
                                 <Typography style={{fontWeight: "bold"}}
-                                            variant="h5">{(this.state.title === undefined || this.state.title === "") ? "New Item" : this.state.title}</Typography>
+                                            variant="h5">{(this.state.title === undefined || this.state.title === "") ? LANGUAGE.NEW_ITEM : this.state.title}</Typography>
                             </div>
-                            <div style={{right: "0"}}/>
+                            <div className="right0"/>
                             <IconButton
                                 edge="end"
                                 color="inherit"
-                                onClick={(e) => {
+                                onClick={() => {
                                     if (this.state.inputReadOnly) {
                                         this.setState({inputReadOnly: false})
                                     } else {
                                         this.setState({open: true})
-                                        //this.deletePassword(e);
                                     }
                                 }}
                             >
@@ -97,12 +121,12 @@ export class PasswordItemView extends PasswordItemViewController {
                             </IconButton>
                         </Toolbar>
                     </AppBar>
-                    <Box style={{paddingTop: "60px"}}>
+                    <Box className="pT60">
                         <TextField inputProps={{
                             readOnly: Boolean(this.state.inputReadOnly),
                             disabled: Boolean(this.state.inputReadOnly),
                         }} fullWidth style={{marginTop: "10px"}} text={"Title"} value={this.state.title} type={"text"}
-                                   label={"Title"}
+                                   label={LANGUAGE.TITLE}
                                    name={"title"} id={"title"} inputRequired={true}
                                    onChange={e => this.onChange(e)}
                                    helperText={this.state.titleHelperText}
@@ -113,30 +137,27 @@ export class PasswordItemView extends PasswordItemViewController {
                             readOnly: Boolean(this.state.inputReadOnly),
                             disabled: Boolean(this.state.inputReadOnly),
                         }}
-                                   fullWidth style={{marginTop: "10px"}} text={"Username"} value={this.state.username}
+                                   fullWidth style={{marginTop: "10px"}} text={LANGUAGE.USERNAME}
+                                   value={this.state.username}
                                    type={"text"}
                                    label={"Username"}
                                    name={"username"} id={"username"}
                                    inputRequired={true} onChange={e => {
                             this.onChange(e)
                         }}/>
-                        <PasswordField fullWidth text={"Password"} value={this.state.password} type={"password"}
+                        <PasswordField fullWidth text={LANGUAGE.PASSWORD} value={this.state.password} type={"password"}
                                        togglePasswordGenerator={this.togglePasswordGenerator}
                                        showingGenerator={this.state.showGenerator}
-                                       placeholder={"Password"} name={"password"} id={"password"}
+                                       ws={this.props.ws}
+                                       revertWSonMessage={this.props.revertWSonMessage}
+                                       placeholder={LANGUAGE.PASSWORD} name={"password"} id={"password"}
                                        inputReadOnly={this.state.inputReadOnly} inputRequired={true}
                                        onChange={e => {
                                            this.onChange(e);
                                        }} showViewPassOptions={!this.props.addingNewItem}/>
                         {
                             (this.state.showGenerator) ?
-                                <Box style={{
-                                    display: "block",
-                                    textAlign: "center",
-                                    padding: "20px 10px",
-                                    backgroundColor: "#E0E0E0",
-                                    borderRadius: "15px 0px 15px 15px"
-                                }}>
+                                <Box className="generator">
                                     <PasswordGenerator generator={this.state.generator} onChange={this.onChange}
                                                        setGeneratorState={this.onChangeGenerator}/>
                                     <Button fullWidth color="primary" className="submit-button" type="button"
@@ -147,7 +168,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                                 e.preventDefault();
                                                 let gen = this.state.generator;
                                                 this.generatePassword(gen.length, gen.specialCharacters, gen.numbers, gen.lowerCase, gen.upperCase)
-                                            }}>{this.state.password === "" || this.state.password === undefined ? "Generate Password" : "Re-generate Password"}</Button>
+                                            }}>{this.state.password === "" || this.state.password === undefined ? LANGUAGE.GENERATE_PASSWORD : LANGUAGE.RE_GENERATE_PASSWORD}</Button>
                                 </Box>
                                 :
                                 <></>
@@ -157,9 +178,9 @@ export class PasswordItemView extends PasswordItemViewController {
                                 readOnly: Boolean(this.state.inputReadOnly),
                                 disabled: Boolean(this.state.inputReadOnly),
                             }}
-                            fullWidth style={{marginTop: "10px"}} multiline={true} text={"Description"}
+                            fullWidth style={{marginTop: "10px"}} multiline={true} text={LANGUAGE.DESCRIPTION}
                             value={this.state.description} type={"text"}
-                            label={"Description"} name={"description"} id={"description"}
+                            label={LANGUAGE.DESCRIPTION} name={"description"} id={"description"}
                             inputRequired={false}
                             onChange={e => this.onChange(e)}/>
                         <TextField
@@ -167,11 +188,12 @@ export class PasswordItemView extends PasswordItemViewController {
                                 readOnly: Boolean(this.state.inputReadOnly),
                                 disabled: Boolean(this.state.inputReadOnly),
                             }}
-                            fullWidth style={{marginTop: "10px"}} text={"Url"} value={this.state.url} type={"text"}
-                            label={"URL"} name={"url"}
+                            fullWidth style={{marginTop: "10px"}} text={LANGUAGE.URL} value={this.state.url}
+                            type={"text"}
+                            label={LANGUAGE.URL} name={"url"}
                             id={"url"} inputRequired={true}
                             onChange={e => this.onChange(e)}/>
-                        <Box style={{paddingTop: "10px"}}>
+                        <Box className="pT10">
                             {
                                 (!this.state.inputReadOnly && !this.props.addingNewItem) ?
                                     <>
@@ -180,7 +202,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                                 variant="contained"
                                                 onClick={(e) => {
                                                     this.updatePassword(e)
-                                                }}>Update
+                                                }}>{LANGUAGE.UPDATE}
                                             {this.state.updateLoading ?
                                                 <CircularProgress
                                                     style={{marginLeft: "10px", color: "white"}}
@@ -191,15 +213,23 @@ export class PasswordItemView extends PasswordItemViewController {
                                             }</Button>
                                     </> :
                                     (!this.props.addingNewItem) ?
-                                        <Button fullWidth style={{backgroundColor: "green"}} color="primary"
-                                                variant="contained"
-                                                onClick={this.openBrowser}>{"Visit page"}</Button> :
+                                        <>
+                                            {this.isEmpty(this.state.url) ?
+                                                <></>
+                                                :
+                                                <Button fullWidth style={{backgroundColor: "green"}} color="primary"
+                                                        variant="contained"
+                                                        hidden={this.isEmpty(this.state.url)}
+                                                        onClick={this.openBrowser}>{"Visit page"}</Button>
+                                            }
+                                        </>
+                                        :
                                         <Button fullWidth color="primary" id="submit-button" type="submit"
                                                 variant="contained"
-                                                onClick={(e) => {
+                                                onClick={() => {
                                                     this.savePassword()
                                                 }}>
-                                            Save
+                                            {LANGUAGE.SAVE}
                                             {this.state.saveLoading ?
                                                 <CircularProgress
                                                     style={{marginLeft: "10px", color: "white"}}
@@ -214,27 +244,17 @@ export class PasswordItemView extends PasswordItemViewController {
                     </Box>
                 </FormControl>
                 <Modal
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
+                    className="modalOuter"
                     open={this.state.open}
                     onClose={() => {
                         this.setState({open: false})
                     }}
                 >
-                    <div style={{
-                        position: 'absolute',
-                        width: "90vw",
-                        backgroundColor: "white",
-                        padding: "10px",
-                        borderRadius: "15px"
-                    }}>
-                        <Typography style={{textAlign: "center"}} variant="h5">Do you want to permanently delete this
-                            password?</Typography>
-                        <div style={{display: "grid", justifyContent: "center"}}>
-                            <div style={{display: "flex", paddingTop: "10px"}}>
+                    <div className="modalInner">
+                        <Typography style={{textAlign: "center"}}
+                                    variant="h5">{LANGUAGE.DO_YOU_WANT_TO_DELETE}</Typography>
+                        <div className="dGrid justifyCenter">
+                            <div className="dFlex pT10">
                                 <Button fullWidth style={{marginRight: "10px", marginTop: "10px"}} color="secondary"
                                         className="cancel-btn"
                                         type="button"
@@ -254,7 +274,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                         variant="contained"
                                         type="button" onClick={() => {
                                     this.setState({open: false})
-                                }}>Cancel</Button>
+                                }}>{LANGUAGE.CANCEL}</Button>
                             </div>
                         </div>
                     </div>
@@ -263,6 +283,10 @@ export class PasswordItemView extends PasswordItemViewController {
         )
     };
 
+    /**
+     * savePassword function
+     * performs save of new password, with validation check of required field
+     */
     savePassword = () => {
         if (this.state.title?.length > 0) {
             this.addPassword();
@@ -271,71 +295,73 @@ export class PasswordItemView extends PasswordItemViewController {
         }
     }
 
+    /**
+     * onChange function
+     * custom onChange function with validator
+     */
     onChange = (e) => {
         this.setState({[e.target.name]: e.target.value});
         if (e.target.name === "title" && e.target.value?.length > 0) {
             this.setState({titleError: false})
-            this.setState({titleHelperText: ""})
+            this.setState({titleHelperText: PMReactUtils.EMPTY_STRING})
         } else if (e.target.name === "title" && !(e.target.value?.length > 0)) {
             this.setState({titleError: true})
-            this.setState({titleHelperText: "Please enter Title"})
+            this.setState({titleHelperText: LANGUAGE.PLEASE_ENTER_TITLE})
         }
     }
 
+    /**
+     * togglePasswordGenerator function
+     * open password generator view
+     */
     togglePasswordGenerator = () => {
         this.setState({showGenerator: !this.state.showGenerator})
     }
+
+    /**
+     * toggleTitleError function
+     * validator for title state
+     */
     toggleTitleError = () => {
         this.setState({titleError: !this.state.titleError})
         if (this.state.titleHelperText === "") {
-            this.setState({titleHelperText: "Please enter Title"})
+            this.setState({titleHelperText: LANGUAGE.PLEASE_ENTER_TITLE})
         } else {
-            this.setState({titleHelperText: ""})
+            this.setState({titleHelperText: PMReactUtils.EMPTY_STRING})
         }
 
     }
+
+    /**
+     * onChangeGenerator function
+     * onChange function for password generator
+     */
     onChangeGenerator = (name, value) => {
         const newGenerator = {...this.state.generator, [name]: value}
         this.setState({generator: newGenerator});
     }
 
+    /**
+     * checkURL function
+     * Handles URL provided by the password object, for "open browser"
+     * adds prefix the URL if the users did not include it.
+     */
     checkURL = () => {
         let url = this.state.url
-        if (!this.state.url?.startsWith('http')) {
-            url = "https://".concat(url)
+        if (!this.state.url?.startsWith(PMReactUtils.HTTP)) {
+            url = `${PMReactUtils.HTTPS}${PMReactUtils.PREFIX}${url}`
         }
         this.setState({url: url})
     }
 
-    openBrowser = async () => {
-        await window.electron.shellOpenExternal(this.state.url);
-    }
-
+    /**
+     * componentDidMount function starts when the class is mounted.
+     * checks URL if viewing or editing existing password and decrypts
+     * password of currently opened password item object
+     * Adds listeners for menu actions
+     */
     componentDidMount() {
-        if (!this.props.addingNewItem) {
-            if (this.state.url !== "" && this.state.url !== undefined) {
-                this.checkURL();
-            }
-            if (this.state.password !== "" && this.state.password !== undefined) {
-                this.decryptPassword(this.state.password).then(password => {
-                    this.setState({password: password})
-                });
-            }
-        }
-        this.waitForSaveItemFromElectron();
-        this.waitForDeleteItemFromElectron();
-    }
-
-    waitForSaveItemFromElectron = () => {
-        this.waitForSaveItem().then((result) => {
-            this.savePassword();
-        })
-    }
-
-    waitForDeleteItemFromElectron = () => {
-        this.waitForDeleteItem().then((result) => {
-            this.setState({open: true})
-        })
+        this.passwordItemViewDidMount()
     }
 }
 

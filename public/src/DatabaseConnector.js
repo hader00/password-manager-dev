@@ -35,7 +35,8 @@ class DatabaseConnector {
             const createValidationTable =
                 `CREATE TABLE Validation(
                 id INTEGER PRIMARY KEY,
-                item TEXT NOT NULL
+                item TEXT NOT NULL,
+                salt TEXT NOT NULL
             );`;
             await this.sendMessage(createValidationTable);
             return true;

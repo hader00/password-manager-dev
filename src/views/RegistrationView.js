@@ -1,10 +1,9 @@
 import React from 'react';
-import ViewType from "../other/ViewType";
+import PMReactUtils from "../shared/other/PMReactUtils";
 import PropTypes from "prop-types";
 import validator from 'validator'
-import {RegistrationViewController} from "../../ViewController";
+import {RegistrationViewController} from "../ViewController";
 import {
-    AppBar,
     Box,
     Button,
     CircularProgress,
@@ -14,17 +13,42 @@ import {
     Snackbar,
     Switch,
     TextField,
-    Toolbar,
-    Tooltip,
-    Typography
+    Tooltip
 } from "@material-ui/core";
-import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import Alert from "@material-ui/lab/Alert";
 import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import '../shared/App.css';
+import AppBarHeader from "../shared/components/AppBarHeader";
+import * as LANGUAGE from '../shared/other/language_en.js';
 
+/**
+ * Class RegistrationView
+ * Provides fields for remote login and buttons for switching to registration view or local mode
+ *
+ * @param   loading                         loading animation after registration button is fired
+ * @param   server                          server state for custom server
+ * @param   email                           email state for registration
+ * @param   password                        password state for registration
+ * @param   confirmPassword                 confirm password state for registration
+ * @param   firstName                       user's first name
+ * @param   lastName                        user's last name
+ * @param   passwordType                    password type state (text or password)
+ * @param   confirmPasswordType             confirmation password type state (text or password)
+ * @param   passwordError                   password error state
+ * @param   passwordErrorText               password helper text in case of validation error
+ * @param   confirmPasswordError            confirm password error state
+ * @param   confirmPasswordErrorText        confirm password helper text in case of validation error
+ * @param   serverError                     server error state
+ * @param   serverHelperText                server helper text in case of validation error
+ * @param   emailError                      e-mail error state
+ * @param   emailHelperText                 e-mail helper text in case of validation error
+ * @param   firstNameError                  first name error state
+ * @param   lastNameError                   last name error state
+ * @param   checked                         state for custom server field
+ * @param   snackbarOpen                    popup open state
+ */
 class RegistrationView extends RegistrationViewController {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -35,65 +59,56 @@ class RegistrationView extends RegistrationViewController {
             confirmPassword: "",
             firstName: "",
             lastName: "",
-            serverError: false,
-            emailError: false,
-            passwordError: false,
-            confirmPasswordError: false,
-            firstNameError: false,
-            lastNameError: false,
-            confirmPasswordHelperText: "",
-            passwordHelperText: "",
-            emailHelperText: "",
-            serverHelperText: "",
             passwordType: "password",
             confirmPasswordType: "password",
-            snackbarOpen: false,
-            checked: false
+            passwordError: false,
+            passwordHelperText: "",
+            confirmPasswordError: false,
+            confirmPasswordHelperText: "",
+            serverError: false,
+            serverHelperText: "",
+            emailError: false,
+            emailHelperText: "",
+            firstNameError: false,
+            lastNameError: false,
+            checked: false,
+            snackbarOpen: false
         }
     }
 
     render() {
         return (
             <FormControl style={{display: "flex"}} onSubmit={this.submitRegistration}>
-                <AppBar variant="fullWidth">
-                    <Toolbar style={{justifyContent: "space-between"}}>
-                        <div style={{left: "0", display: "flex", alignItems: "center"}}>
-                            <Button
-                                style={{marginRight: "10px", backgroundColor: "#007fff"}}
-                                startIcon={<ArrowBackIosIcon/>}
-                                color="primary" variant="contained"
-                                onClick={() => this.handleViewChange(ViewType.defaultLoginView)}>Back</Button>
-                            <Typography style={{fontWeight: "bold"}} variant="h5">Registration</Typography>
-                        </div>
-                    </Toolbar>
-                </AppBar>
-                <Box style={{paddingTop: "60px"}}>
-                    <TextField fullWidth text={"First Name"} type={"text"} label={"Enter First Name"}
+                <AppBarHeader text={LANGUAGE.REGISTRATION} handleViewChange={this.handleViewChange}/>
+                <Box className="mT60dFlex">
+                    <TextField fullWidth text={LANGUAGE.FIRST_NAME} type={"text"} label={LANGUAGE.ENTER_FIRST_NAME}
                                value={this.state.firstName}
                                name={"firstName"} id={"firstName"} onChange={this.onChange} required
                                error={this.state.firstNameError}/>
                 </Box>
-                <Box style={{paddingTop: "10px"}}>
-                    <TextField fullWidth text={"Last Name"} type={"text"} label={"Enter Last Name"} name={"lastName"}
+                <Box className="pT10">
+                    <TextField fullWidth text={LANGUAGE.LAST_NAME} type={"text"} label={LANGUAGE.ENTER_LAST_NAME}
+                               name={"lastName"}
                                value={this.state.lastName}
                                id={"lastName"} onChange={this.onChange} required error={this.state.lastNameError}/>
                 </Box>
-                <Box style={{paddingTop: "10px"}}>
-                    <TextField fullWidth text={"Email"} type={"email"} label={"Enter Email"} name={"email"}
+                <Box className="pT10">
+                    <TextField fullWidth text={LANGUAGE.EMAIL} type={"email"} label={LANGUAGE.ENTER_EMAIL}
+                               name={"email"}
                                value={this.state.email}
                                id={"email"} onChange={this.onChange} required error={this.state.emailError}
                                helperText={this.state.emailHelperText}/>
                 </Box>
-                <Box style={{paddingTop: "10px"}}>
-                    <div style={{display: "flex", margin: 0}}>
-                        <TextField fullWidth text={"Password"} type={this.state.passwordType} label={"Enter Password"}
+                <Box className="pT10">
+                    <div className="m0dFlex">
+                        <TextField fullWidth text={LANGUAGE.PASSWORD} type={this.state.passwordType}
+                                   label={LANGUAGE.ENTER_PASSWORD}
                                    name={"password"} value={this.state.password}
                                    id={"password"} onChange={this.onChange} required error={this.state.passwordError}
                                    helperText={this.state.passwordHelperText}
                         />
                         {this.state.password?.length > 0 ?
                             <Button
-                                variant=""
                                 onClick={() => {
                                     this.togglePasswordType("passwordType")
                                 }}
@@ -103,10 +118,10 @@ class RegistrationView extends RegistrationViewController {
                         }
                     </div>
                 </Box>
-                <Box style={{paddingTop: "10px"}}>
-                    <div style={{display: "flex", margin: 0}}>
-                        <TextField fullWidth text={"Confirm Password"} type={this.state.confirmPasswordType}
-                                   label={"Confirm Password"}
+                <Box className="pT10">
+                    <div className="m0dFlex">
+                        <TextField fullWidth text={LANGUAGE.CONFIRM_PASSWORD} type={this.state.confirmPasswordType}
+                                   label={LANGUAGE.CONFIRM_PASSWORD}
                                    name={"confirmPassword"} id={"confirmPassword"}
                                    error={this.state.confirmPasswordError}
                                    helperText={this.state.confirmPasswordHelperText}
@@ -116,7 +131,6 @@ class RegistrationView extends RegistrationViewController {
                         }} required/>
                         {this.state.confirmPassword?.length > 0 ?
                             <Button
-                                variant=""
                                 onClick={() => {
                                     this.togglePasswordType("confirmPasswordType")
                                 }}
@@ -126,24 +140,24 @@ class RegistrationView extends RegistrationViewController {
                         }
                     </div>
                 </Box>
-                <Box style={{display: "block"}}>
-                    <Box style={{display: "flex"}}>
+                <Box className="dBlock">
+                    <Box className="dFlex">
                         <FormControlLabel
                             checked={this.state.checked}
                             value="start"
-                            onChange={(e) => {
+                            onChange={() => {
                                 this.setState({checked: !this.state.checked})
                                 if (this.state.checked) {
-                                    this.setState({server: ""})
+                                    this.setState({server: PMReactUtils.EMPTY_STRING})
                                     this.setState({serverError: false})
-                                    this.setState({serverHelperText: ""})
+                                    this.setState({serverHelperText: PMReactUtils.EMPTY_STRING})
                                 }
                             }}
                             control={<Switch color="primary"/>}
                             label={
-                                <Box style={{display: "flex", color: "dimgray"}}>
-                                    <p>{"Custom Server"}</p>
-                                    <Tooltip title={"For enterprise login"}>
+                                <Box className="dFlex dimgrayColor">
+                                    <p>{LANGUAGE.CUSTOM_SERVER}</p>
+                                    <Tooltip title={LANGUAGE.FOR_ENTERPRISE_LOGIN}>
                                         <IconButton aria-label="questionMark">
                                             <HelpOutlineIcon/>
                                         </IconButton>
@@ -154,24 +168,26 @@ class RegistrationView extends RegistrationViewController {
                         />
                     </Box>
                 </Box>
-                <Box hidden={!this.state.checked} style={{paddingBottom: "10px"}}>
+                <Box hidden={!this.state.checked} className="pB10">
                     <TextField id="hiddenField" type={"text"}
                                value={this.state.server}
-                               onChange={(e) => {
-                                   this.onChange(e)
+                               onChange={async (e) => {
+                                   await this.onChange(e)
                                }
                                }
                                style={{display: "flex"}}
-                               label={"Enter Server (https://localhost:6868)"} name={"server"}
+                               label={LANGUAGE.ENTER_SERVER + PMReactUtils.SPACE + LANGUAGE.EXAMPLE_SERVER}
+                               name={"server"}
                                error={this.state.serverError}
                                helperText={this.state.serverHelperText}
                     />
                 </Box>
+                <div className="mT20"/>
                 <Button color="primary" variant="contained" type="submit"
                         onClick={async (e) => {
                             await this.submitRegistration(e)
                         }}>
-                    Register
+                    {LANGUAGE.REGISTER}
                     {this.state.loading ?
                         <CircularProgress
                             style={{marginLeft: "10px", color: "white"}}
@@ -182,13 +198,47 @@ class RegistrationView extends RegistrationViewController {
                     }
                 </Button>
                 <Snackbar open={this.state.snackbarOpen} autoHideDuration={6000} onClose={this.handleClose}>
-                    <Alert elevation={6} variant="filled" onClose={this.handleClose} severity="error">Registration
-                        failed, please check your credentials!</Alert>
+                    <Alert elevation={6} variant="filled" onClose={() => {
+                        this.handleClose(null, "clickaway")
+                    }} severity="error">{LANGUAGE.REGISTRATION_FAILED}</Alert>
                 </Snackbar>
             </FormControl>
         );
     }
 
+
+    /**
+     * checkPassword function
+     * validate if passwords fulfill required characteristics
+     */
+    checkPassword = (password) => {
+        if (!validator.matches(password, PMReactUtils.PASSWORD_REGEX)) {
+            this.setState({passwordError: true})
+            this.setState({passwordHelperText: LANGUAGE.PASSWORD_MUST_BE})
+            return true
+        }
+        return false
+    }
+
+    /**
+     * checkConfirmPassword function
+     * validate if confirmPassword equals password
+     */
+    checkConfirmPassword = (confirmPassword) => {
+        let s = this.state
+        if (s.password !== confirmPassword) {
+            this.setState({passwordError: true})
+            this.setState({confirmPasswordError: true})
+            this.setState({confirmPasswordHelperText: LANGUAGE.PASSWORD_DONT_MATCH})
+            return true
+        }
+        return false
+    }
+
+    /**
+     * onChange function
+     * with email, server and passwords validator
+     */
     onChange = async (e) => {
         this.setState({[e.target.name]: e.target.value});
         this.sanitizeValidation();
@@ -206,63 +256,12 @@ class RegistrationView extends RegistrationViewController {
         }
     }
 
-    togglePasswordType = (type) => {
-        if (this.state[type] === "password") {
-            this.setState({[type]: "text"})
-        } else {
-            this.setState({[type]: "password"})
-        }
-    }
-
-    checkPassword = (password) => {
-        if (!validator.matches(password, /(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[!"#$%'()*+,-./:;<=>?@\[\\\]^_`{|}~]).{8,}/)) {
-            this.setState({passwordError: true})
-            this.setState({passwordHelperText: "Password must be at least 8 charters long and contain one number, one lowercase, one uppercase and one special character (!\"#$%'()*+,-./:;<=>?@[\\]^_`{|}~)!"})
-            return true
-        }
-        return false
-    }
-    checkEmail = (email) => {
-        if (!validator.isEmail(email)) {
-            this.setState({emailError: true})
-            this.setState({emailHelperText: "Enter valid email!"})
-            return true
-        }
-        return false
-    }
-
-    checkServer = async (server) => {
-        if (!validator.isEmpty(server)) {
-            const available = await this.checkServerAvailability(server).then((res) => {
-                return res
-            });
-            if (!available?.serverCheck) {
-                this.setState({serverError: true})
-                this.setState({serverHelperText: `Cannot connect to: ${server}, please check your address again. Add also "http" or "https" prefix.`})
-            } else {
-                this.setState({serverHelperText: `Connected. ${server} is available`})
-            }
-        }
-    }
-
-    handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        this.setState({snackbarOpen: true})
-    }
-
-    checkConfirmPassword = (confirmPassword) => {
-        let s = this.state
-        if (s.password !== confirmPassword) {
-            this.setState({passwordError: true})
-            this.setState({confirmPasswordError: true})
-            this.setState({confirmPasswordHelperText: "Passwords doesn't match!"})
-            return true
-        }
-        return false
-    }
-
+    /**
+     * onEnterPress function
+     * performs action on enter key press
+     *
+     * @param   e   caller event
+     */
     onEnterPress = async (e) => {
         if (e.keyCode === 13 && e.shiftKey === false) {
             e.preventDefault();
@@ -270,6 +269,12 @@ class RegistrationView extends RegistrationViewController {
         }
     }
 
+    /**
+     * submitRegistration function
+     * validates inputs and sends registration details to electron which performs registration on the server
+     *
+     * @param   e   caller event
+     */
     submitRegistration = async (e) => {
         e.preventDefault();
         let s = this.state
@@ -308,6 +313,10 @@ class RegistrationView extends RegistrationViewController {
         }
     }
 
+    /**
+     * sanitizeValidation function
+     * remove field errors and helper-texts
+     */
     sanitizeValidation = () => {
         this.setState({serverError: false})
         this.setState({emailError: false})
@@ -315,15 +324,11 @@ class RegistrationView extends RegistrationViewController {
         this.setState({confirmPasswordError: false})
         this.setState({firstNameError: false})
         this.setState({lastNameError: false})
-        this.setState({confirmPasswordHelperText: ""})
-        this.setState({passwordHelperText: ""})
-        this.setState({emailHelperText: ""})
-        this.setState({serverHelperText: ""})
+        this.setState({confirmPasswordHelperText: PMReactUtils.EMPTY_STRING})
+        this.setState({passwordHelperText: PMReactUtils.EMPTY_STRING})
+        this.setState({emailHelperText: PMReactUtils.EMPTY_STRING})
+        this.setState({serverHelperText: PMReactUtils.EMPTY_STRING})
 
-    }
-
-
-    componentDidMount() {
     }
 }
 

@@ -1,20 +1,6 @@
 const path = require('path');
 const {app} = require('electron');
 
-/*
-* This salt is used for local database encryption.
-* Can be changed, must be 32 chars.
-*/
-const LOCAL_SECRET = "5353539c3ae126022b7c11f1ff927ed0";
-/*
-* This salt is used for remote database encryption.
-* May be null, used for improved protection, can be customized
-* by user, when building locally, user must synchronise this secret
-* across all apps.
-* Can be changed, must be 32 chars.
-*/
-const SECRET = "3cfd65492db0040a7ba42f0059fc6ca8";
-
 /* API */
 const SERVER = "https://password-manager-mysql.herokuapp.com";
 const API_CREATE_USER = "/api/password-manager/user-create";
@@ -28,9 +14,13 @@ const API_AVAILABLE = "/available";
 
 /* Controller */
 const GIT_REPO = "https://github.com/hader00/password-manager-dev";
+const STRETCH_SALT_INFO = "stretchedSaltInfo";
+const STRETCH_MASTER_PASS_INFO = "stretchedMasterPassInfo";
 const ENCRYPTION_KEY_INFO = "encryptionKeyInfo";
 const NKDF = "NFKD";
 const DATABASE_FILENAME = "passwords.db";
+const TSV = ".tsv"
+const DB = ".db"
 const DEFAULT_LOCAL_DB_LOCATION = path.resolve(app.getPath("userData"), DATABASE_FILENAME);
 const DBModeEnum = {
     local: 0,
@@ -51,7 +41,7 @@ function isEmpty(item) {
 
 //
 const DEFAULT_VIEW = "defaultView";
-const STORED_EMAIL = "storedEmail";
+const STORED_EMAIL = "userEmail";
 const CUSTOM_DB_LOC = "customDatabaseLocation";
 const CLEAR_TIMEOUT = "clearTimeout";
 const LOGOUT_TIMEOUT = "logoutTimeout";
@@ -60,6 +50,7 @@ const STORED_SERVER = "storedServer";
 
 /* Crypto */
 const ALGORITHM = "aes-256-cbc";
+const SHA256 = "sha256";
 const SHA512 = "sha512";
 const HKDF_SHA512 = "SHA-512";
 /* END Crypto */
@@ -87,9 +78,6 @@ const BD_CLOSE_INFO = "Closed the database connection. ";
 
 
 module.exports = {
-    LOCAL_SECRET,
-    SECRET,
-    //
     SERVER,
     API_CREATE_USER,
     API_LOGIN_USER,
@@ -100,9 +88,13 @@ module.exports = {
     API_AVAILABLE,
     //
     GIT_REPO,
+    STRETCH_SALT_INFO,
+    STRETCH_MASTER_PASS_INFO,
     ENCRYPTION_KEY_INFO,
     NKDF,
     DATABASE_FILENAME,
+    TSV,
+    DB,
     DEFAULT_LOCAL_DB_LOCATION,
     DBModeEnum,
     VIEW_TYPE,
@@ -116,6 +108,7 @@ module.exports = {
     STORED_SERVER,
     //
     ALGORITHM,
+    SHA256,
     SHA512,
     HKDF_SHA512,
     //
