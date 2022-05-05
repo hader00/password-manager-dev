@@ -169,11 +169,14 @@ class ElectronWindowBuilder {
                 if (this.controller.getLoginMode() === DBModeEnum.local) {
                     this.controller.databaseConnector.closeDatabase();
                 }
+                this.controller.terminateWebsocket();
                 // logout user if window is closed
                 this.controller.logoutImmediate();
-                const ses = this.win.webContents?.session;
-                if (ses !== null) {
-                    await ses.clearCache();
+                if (this.win?.webContents !== null) {
+                    const ses = this.win?.webContents?.session;
+                    if (ses !== null && ses !== undefined) {
+                        await ses.clearCache();
+                    }
                 }
                 app.quit();
             })

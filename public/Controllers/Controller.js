@@ -784,6 +784,11 @@ class Controller {
         this.extensionLoginFunc = extensionLoginFunc
     }
 
+    // Set extension controller
+    setTerminateWebsocket(terminateWebsocketFunc) {
+        this.terminateWebsocketFunc = terminateWebsocketFunc
+    }
+
     // Enable/Disable login related menu items
     // @param   enable  boolean to enable or disable menu items
     enableMenuItems(enable) {
@@ -793,6 +798,12 @@ class Controller {
             let menuItem = menu.getMenuItemById(id)
             menuItem.enabled = enable
         })
+    }
+
+    terminateWebsocket() {
+        if  (typeof this.terminateWebsocketFunc === 'function') {
+            this.terminateWebsocketFunc()
+        }
     }
 
     // Logout and clean data saved by application

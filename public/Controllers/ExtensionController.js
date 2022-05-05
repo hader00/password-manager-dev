@@ -23,6 +23,7 @@ class ExtensionController {
     init() {
         this.controller.setExtensionControllerLogout(this.logout)
         this.controller.setExtensionControllerLogin(this.login)
+        this.controller.setTerminateWebsocket(this.close)
         let that = this;
         this.server.on('connection', function (socket) {
             that.sockets.push(socket);
@@ -108,6 +109,19 @@ class ExtensionController {
                 defaultView: PMUtils.VIEW_TYPE.passwordListView,
                 timeout: logoutTimeout
             })));
+        }
+    }
+
+    close = () => {
+        try {
+            this.logout()
+            if (this.server !== null) {
+                this.server.close();
+            }
+        } catch (e) {
+            if (this.server !== null) {
+                this.server.terminate();
+            }
         }
     }
 }
